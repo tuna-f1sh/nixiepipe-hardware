@@ -7,9 +7,9 @@ LBD=0.23;
 MATZ=3.15;
 WOODZ=3.15;
 
-WS2812 = 4;
-WS_SPACE = 15;
-WS_BORDER = 6;
+WS2812 = 5;
+WS_BORDER = 3;
+WS_SPACE = WS2812 + WS_BORDER;
 WS_PIPEH = 4;
 WS_H = 1.6;
 
@@ -18,8 +18,8 @@ SOFF = 4;
 pcbh = PCBZ + SOFF;
 
 number=9;
-WIDTH = (WS_SPACE * 3) + (WS_BORDER * 2);
-HEIGHT = WIDTH;
+WIDTH = 40 + (WS_SPACE);
+HEIGHT = WIDTH + 10;
 DEPTH = ((number+2) * MATZ) + (2 * WOODZ);
 
 ht = HEIGHT + LBD;
@@ -36,22 +36,25 @@ DLY = (wd / YSlots);
 DLZ = (dp / ZSlots);
 
 if (!export) {
-  diffuser(-6);
+  diffuser(0);
   translate([0,0,MATZ]) stack(number);
   translate([0,0,MATZ*(number+2)]) face(1);
   translate([0,0,-MATZ]) face(0);
   translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
-  translate([0,0,MATZ*(number+1)]) diffuser(-6);
+  translate([0,0,MATZ*(number+1)]) diffuser(0);
   translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
-  translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();
-  translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();
+  /* translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();*/
+  /* translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();*/
+  /* translate([0,ht/2+WS_PIPEH+pcbh-SOFF,dp/2-MATZ*3/2]) rotate([90,0,0]) pcb();*/
 } else {
   /* projection() base();*/
-  for (x = [1:1:9]) {
-    translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);
-  }
-  /* projection() stack(2);*/
-  /* projection() stack(3);*/
+  /* for (x = [1:1:number]) {*/
+  /*   translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);*/
+  /* }*/
+  /* projection() side();*/
+  /* projection() face(0);*/
+  /* projection() face(1);*/
+  projection() pcb();
 }
 
 module middle() {
@@ -59,42 +62,21 @@ module middle() {
 }
 
 module left() {
-  translate([wd/2-WS2812/2-WS_BORDER,ht/2,0]) hexagon(WS_PIPEH*2,MATZ);
+  translate([-WS_SPACE/2,ht/2,0]) hexagon(WS_PIPEH*2,MATZ);
 }
 
 module right() {
-  translate([-wd/2+WS2812/2+WS_BORDER,ht/2,0]) hexagon(WS_PIPEH*2,MATZ);
+  translate([WS_SPACE/2,ht/2,0]) hexagon(WS_PIPEH*2,MATZ);
 }
 
 module diffuser(number) {
   difference() {
     union() {
       roundedBox([wd,ht,MATZ],5);
-      if (number == 1) {
+      if (number % 2 && number != 0) {
         right();
       }
-      else if (number == 2) {
-        middle();
-      }
-      else if (number == 3) {
-        left();
-      }
-      else if (number == 4) {
-        right();
-      }
-      else if (number == 5) {
-        middle();
-      }
-      else if (number == 6) {
-        left();
-      }
-      else if (number == 7) {
-        right();
-      }
-      else if (number == 8) {
-        middle();
-      }
-      else if (number == 9) {
+      else if ( number != 0 ) {
         left();
       }
     }
@@ -120,6 +102,24 @@ module diffuser(number) {
   }
 }
 
+module pcb() {
+  pcbd = dp - (WOODZ * 2) - LBD;
+  difference() {
+    roundedBox([wd,pcbd,PCBZ],2);
+    translate([0,pcbd/2-MATZ*3/2,0]) {
+      for (x = [1:1:9]) {
+        translate([0,-MATZ*(x-1),0]) {
+          if (x % 2) {
+            translate([WS_SPACE/2,0,0]) cube([WS2812,WS2812,PCBZ],center=true);
+          } else {
+            translate([-WS_SPACE/2,0,0]) cube([WS2812,WS2812,PCBZ],center=true);
+          }
+        }
+      }
+    }
+  }
+}
+
 module face(front) {
   WEnd = wd;
   HFace = ht+WS_PIPEH+pcbh - 5;
@@ -141,7 +141,7 @@ module face(front) {
       }
     }
     if (front) {
-      scale([0.8,0.8,2]) diffuser(-6);
+      scale([0.8,0.8,2]) diffuser(0);
     }
   }
 }
@@ -194,7 +194,7 @@ module pixel() {
 }
 
 module stack(number) {
-  for (x = [0:1:number-1]) {
-    translate([0,0,MATZ*x]) diffuser(x);
+  for (x = [1:1:number]) {
+    translate([0,0,MATZ*(x-1)]) diffuser(x);
   }
 }
