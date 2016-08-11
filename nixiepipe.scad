@@ -2,6 +2,7 @@ include <shapes.scad>
 include <laser-functions.scad>
 $fn=50;
 export = true;
+teeth = true;
 
 LBD=0.23;
 MATZ=3.15;
@@ -15,7 +16,8 @@ WS_H = 1.6;
 
 PCBZ = 1.6;
 SOFF = 4;
-pcbh = PCBZ + SOFF;
+pcbh = PCBZ + SOFF + WS_H;
+PCB_TABZ = 8;
 
 number=9;
 WIDTH = 40 + (WS_SPACE);
@@ -36,25 +38,26 @@ DLY = (wd / YSlots);
 DLZ = (dp / ZSlots);
 
 if (!export) {
-  diffuser(0);
+  /* diffuser(0);*/
   translate([0,0,MATZ]) stack(number);
   translate([0,0,MATZ*(number+2)]) face(1);
   translate([0,0,-MATZ]) face(0);
-  translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
-  translate([0,0,MATZ*(number+1)]) diffuser(0);
-  translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
+  /* translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
+  /* translate([0,0,MATZ*(number+1)]) diffuser(0);*/
+  /* translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
   /* translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();*/
-  /* translate([0,ht/2+WS_PIPEH+pcbh-SOFF,dp/2-MATZ*3/2]) rotate([90,0,0]) pcb();*/
+  /* translate([0,ht/2+WS_PIPEH+WS_H,dp/2-MATZ*3/2]) rotate([90,180,0]) pcb();*/
+  translate([148.5,45,-89.2]) rotate([90,180,0]) import("nixie-pipe-pcb.stl");
 } else {
   /* projection() base();*/
   /* for (x = [1:1:number]) {*/
   /*   translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);*/
   /* }*/
-  /* projection() side();*/
+  projection() side();
   /* projection() face(0);*/
   /* projection() face(1);*/
-  projection() pcb();
+  /* projection() pcb();*/
 }
 
 module middle() {
@@ -74,10 +77,10 @@ module diffuser(number) {
     union() {
       roundedBox([wd,ht,MATZ],5);
       if (number % 2 && number != 0) {
-        right();
+        left();
       }
       else if ( number != 0 ) {
-        left();
+        right();
       }
     }
     if (number == 1) {
@@ -99,13 +102,22 @@ module diffuser(number) {
     } else if (number == 9) {
       rotate([180,180,0]) translate([0,0,-MATZ]) linear_extrude(height = MATZ*3) text("9",size=38,halign="center",valign="center");
     }
+    if ((number >= 1)) {
+      if (!teeth) {
+        screw_holes();
+      }
+    }
   }
 }
 
 module pcb() {
   pcbd = dp - (WOODZ * 2) - LBD;
   difference() {
-    roundedBox([wd,pcbd,PCBZ],2);
+    union() {
+      roundedBox([wd,pcbd,PCBZ],2);
+      translate([0,-pcbd/2-PCB_TABZ/2,0]) roundedBox([wd-10,MATZ*2+PCB_TABZ,PCBZ],2);
+      translate([0,pcbd/2,0]) roundedBox([wd-10,MATZ*2,PCBZ],0.5);
+    }
     translate([0,pcbd/2-MATZ*3/2,0]) {
       for (x = [1:1:9]) {
         translate([0,-MATZ*(x-1),0]) {
@@ -128,20 +140,27 @@ module face(front) {
     union() {
       diffuser(0);
       translate([0,ht/2,0]) cube([wd,WS_PIPEH*2+pcbh*2,MATZ],center=true);
-      translate([-wd/2,ht/2+WS_PIPEH+pcbh,0]) {
-        for (x = [DLY:DLY*2:WEnd]) {
-          translate([x,0,0]) tooth(DLY,1,LBD,WOODZ);
+      if (teeth) {
+        translate([-wd/2,ht/2+WS_PIPEH+pcbh,0]) {
+          for (x = [DLY:DLY*2:WEnd]) {
+            translate([x,0,0]) tooth(DLY,1,LBD,WOODZ);
+          }
         }
-      }
-      translate([0,-ht/2+5,0]) {
-        for (y = [HTY:HTY*2:ht]) {
-          translate([-wd/2,y,0]) tooth(HTY,2,LBD,WOODZ);
-          translate([wd/2,y,0]) tooth(HTY,2,LBD,WOODZ);
+        translate([0,-ht/2+5,0]) {
+          for (y = [HTY:HTY*2:ht]) {
+            translate([-wd/2,y,0]) tooth(HTY,2,LBD,WOODZ);
+            translate([wd/2,y,0]) tooth(HTY,2,LBD,WOODZ);
+          }
         }
       }
     }
     if (front) {
       scale([0.8,0.8,2]) diffuser(0);
+    }
+    // pcb slot
+    translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ+LBD,MATZ],center=true);
+    if (!teeth) {
+      screw_holes();
     }
   }
 }
@@ -152,16 +171,20 @@ module side() {
   union() {
   difference () {
     cube([dp,HFace,WOODZ],center=true);
-    translate([0,-HFace/2,0]) {
-      for (y = [HTY:HTY*2:HFace]) {
-        translate([dp/2,y,0]) dent(HTY,2,LBD,WOODZ);
-        translate([-dp/2,y,0]) dent(HTY,2,LBD,WOODZ);
+    if (teeth) {
+      translate([0,-HFace/2,0]) {
+        for (y = [HTY:HTY*2:HFace]) {
+          translate([dp/2,y,0]) dent(HTY,2,LBD,WOODZ);
+          translate([-dp/2,y,0]) dent(HTY,2,LBD,WOODZ);
+        }
       }
     }
   }
-    translate([-dp/2,0,0]) {
-      for (y = [DLZ:DLZ*2:dp]) {
-        translate([y,HFace/2,0]) tooth(DLZ,1,LBD,WOODZ);
+    if (teeth) {
+      translate([-dp/2,0,0]) {
+        for (y = [DLZ:DLZ*2:dp]) {
+          translate([y,HFace/2,0]) tooth(DLZ,1,LBD,WOODZ);
+        }
       }
     }
   }
@@ -171,16 +194,20 @@ module base() {
   baseW = wd+WOODZ*2;
   difference() {
     cube([baseW,dp,WOODZ],center=true);
-    translate([-wd/2,0,0]) {
-      for (x = [DLY:DLY*2:baseW]) {
-        translate([x,-dp/2,0]) tooth(DLY,1,LBD,WOODZ);
-        translate([x,dp/2,0]) tooth(DLY,1,LBD,WOODZ);
+    if (teeth) {
+      translate([-wd/2,0,0]) {
+        for (x = [DLY:DLY*2:baseW]) {
+          translate([x,-dp/2,0]) tooth(DLY,1,LBD,WOODZ);
+          translate([x,dp/2,0]) tooth(DLY,1,LBD,WOODZ);
+        }
       }
     }
-    translate([0,-dp/2,0]) {
-      for (y = [DLZ:DLZ*2:dp]) {
-        translate([-baseW/2,y,0]) dent(DLZ,2,LBD,WOODZ);
-        translate([baseW/2,y,0]) dent(DLZ,2,LBD,WOODZ);
+    if (teeth) {
+      translate([0,-dp/2,0]) {
+        for (y = [DLZ:DLZ*2:dp]) {
+          translate([-baseW/2,y,0]) dent(DLZ,2,LBD,WOODZ);
+          translate([baseW/2,y,0]) dent(DLZ,2,LBD,WOODZ);
+        }
       }
     }
   }
@@ -195,6 +222,14 @@ module pixel() {
 
 module stack(number) {
   for (x = [1:1:number]) {
-    translate([0,0,MATZ*(x-1)]) diffuser(x);
+    translate([0,0,MATZ*(9-x)]) diffuser(x);
   }
+}
+
+module screw_holes() {
+  hloc = (5+3.2) / 2;
+  translate([wd/2-hloc,ht/2-hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
+  translate([-wd/2+hloc,-ht/2+hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
+  translate([wd/2-hloc,-ht/2+hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
+  translate([-wd/2+hloc,ht/2-hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
 }
