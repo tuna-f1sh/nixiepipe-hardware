@@ -1,7 +1,9 @@
 include <shapes.scad>
 include <laser-functions.scad>
 $fn=50;
-export = true;
+export = false;
+enumbers = false;
+eblank = true;
 teeth = true;
 
 LBD=0.23;
@@ -18,6 +20,7 @@ PCBZ = 1.6;
 SOFF = 4;
 pcbh = PCBZ + SOFF + WS_H;
 PCB_TABZ = 8;
+bspace = 8;
 
 number=9;
 WIDTH = 40 + (WS_SPACE);
@@ -38,26 +41,41 @@ DLY = (wd / YSlots);
 DLZ = (dp / ZSlots);
 
 if (!export) {
-  /* diffuser(0);*/
+  diffuser(0);
   translate([0,0,MATZ]) stack(number);
   translate([0,0,MATZ*(number+2)]) face(1);
   translate([0,0,-MATZ]) face(0);
-  /* translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
-  /* translate([0,0,MATZ*(number+1)]) diffuser(0);*/
-  /* translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
+  translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
+  translate([0,0,MATZ*(number+1)]) diffuser(0);
+  translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
   /* translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H,dp/2-MATZ*3/2]) rotate([90,180,0]) pcb();*/
   translate([148.5,45,-89.2]) rotate([90,180,0]) import("nixie-pipe-pcb.stl");
+  echo ("<b>Height:</b>",ht,"<b>Width:</b>",wd,"<b>Depth:</b>",dp);
 } else {
-  /* projection() base();*/
-  /* for (x = [1:1:number]) {*/
-  /*   translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);*/
-  /* }*/
-  projection() side();
-  /* projection() face(0);*/
-  /* projection() face(1);*/
-  /* projection() pcb();*/
+  if (enumbers) {
+    for (x = [1:1:number]) {
+      translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);
+    }
+  } else if (eblank) {
+    projection() diffuser(-1);
+  } else {
+    if (teeth) {
+      projection() side();
+      translate([dp+1,0,0]) {
+        projection() side();
+        translate([(dp+1)+MATZ*2+1,0,0]) { 
+          projection() face(0);
+          translate([wd+1+MATZ*2,0,0]) projection() face(1);
+        }
+      }
+    } else {
+      projection() face(0);
+      translate([wd+1,0,0]) projection() face(1);
+    }
+  }
+    /* projection() pcb();*/
 }
 
 module middle() {
@@ -76,10 +94,10 @@ module diffuser(number) {
   difference() {
     union() {
       roundedBox([wd,ht,MATZ],5);
-      if (number % 2 && number != 0) {
+      if (number % 2 && number > 0) {
         left();
       }
-      else if ( number != 0 ) {
+      else if ( number > 0 ) {
         right();
       }
     }
@@ -102,7 +120,7 @@ module diffuser(number) {
     } else if (number == 9) {
       rotate([180,180,0]) translate([0,0,-MATZ]) linear_extrude(height = MATZ*3) text("9",size=38,halign="center",valign="center");
     }
-    if ((number >= 1)) {
+    if ((abs(number) >= 1)) {
       if (!teeth) {
         screw_holes();
       }
@@ -139,7 +157,11 @@ module face(front) {
   difference() {
     union() {
       diffuser(0);
-      translate([0,ht/2,0]) cube([wd,WS_PIPEH*2+pcbh*2,MATZ],center=true);
+      if (teeth) {
+        translate([0,ht/2,0]) cube([wd,WS_PIPEH*2+pcbh*2,MATZ],center=true);
+      } else {
+        translate([0,ht/2,0]) roundedBox([wd,WS_PIPEH*2+pcbh*2+bspace,MATZ],5);
+      }
       if (teeth) {
         translate([-wd/2,ht/2+WS_PIPEH+pcbh,0]) {
           for (x = [DLY:DLY*2:WEnd]) {
@@ -158,7 +180,7 @@ module face(front) {
       scale([0.8,0.8,2]) diffuser(0);
     }
     // pcb slot
-    translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ+LBD,MATZ],center=true);
+    translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ-LBD,MATZ],center=true);
     if (!teeth) {
       screw_holes();
     }
@@ -227,7 +249,7 @@ module stack(number) {
 }
 
 module screw_holes() {
-  hloc = (5+3.2) / 2;
+  hloc = (5+3.2-LBD) / 2;
   translate([wd/2-hloc,ht/2-hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
   translate([-wd/2+hloc,-ht/2+hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
   translate([wd/2-hloc,-ht/2+hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
