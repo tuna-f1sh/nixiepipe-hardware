@@ -3,7 +3,7 @@
 #include <FastLED.h>
 #include <DS3232RTC.h>
 
-#include "NixiePipe.h"
+#include <NixiePipe.h>
 
 #define LED_PIN       6
 #define NUM_PIPES     1
@@ -18,7 +18,7 @@ static inline void setTime(tmElements_t tm) {
 }
 
 static void cycle(void) {
-  for (int i = 1; i < 10; i++) {
+  for (int i = 0; i < 10; i++) {
     pipes.setPipeNumber(0,i);
     pipes.shift(1);
     pipes.setPipeNumber(0,i);
@@ -26,7 +26,7 @@ static void cycle(void) {
     pipes.show();
     delay(100);
   }
-  for (int i = 9; i > 0; i--) {
+  for (int i = 9; i >= 0; i--) {
     pipes.setPipeNumber(0,i);
     pipes.shift(1);
     pipes.setPipeNumber(0,i);
@@ -89,7 +89,7 @@ void loop() {
   /*   }*/
   /* }*/
   
-  EVERY_N_SECONDS(1) { pipes.setPipeNumber(0,i);i = ((i < 9) ? (i + 1) : 1); }
+  EVERY_N_SECONDS(1) { pipes.setPipeNumber(0,i);i = ((i < 9) ? (i + 1) : 0); }
   
   /* EVERY_N_MILLISECONDS(10) { ++pipes; }*/
   EVERY_N_MILLISECONDS( 100 ) { gHue++; } // slowly cycle the "base color" through the rainbow

@@ -3,15 +3,18 @@
 #include <FastLED.h>
 #include <DS3232RTC.h>
 
-#include "NixiePipe.h"
+#include <NixiePipe.h>
 
 #define LED_PIN       6
 #define NUM_PIPES     4
 #define BRIGHTNESS    10
 
+#define COLOUR        CRGB::White
+#define RAINBOW       true // display rainbow digits
+
 uint8_t gHue = 0;
 
-NixiePipe pipes = NixiePipe(4,6);
+NixiePipe pipes = NixiePipe(NUM_PIPES,LED_PIN);
 
 static inline void setTime(tmElements_t tm) {
   pipes.setNumber((tm.Hour * 100) + tm.Minute);
@@ -23,29 +26,8 @@ void setup() {
 
   pipes.clear();
   pipes.setBrightness(BRIGHTNESS);
-  pipes.setPipeColour(CRGB::Cyan);
-  pipes.writePipeNumber(0,1);
-  pipes.show();
-
-  for (int i = 0; i < 10; i++) {
-    pipes.setPipeNumber(0,i);
-    pipes.shift(1);
-    pipes.setPipeNumber(0,i);
-    pipes.write();
-    pipes.show();
-    delay(100);
-  }
-  for (int i = 9; i >= 0; i--) {
-    pipes.setPipeNumber(0,i);
-    pipes.shift(1);
-    pipes.setPipeNumber(0,i);
-    pipes.write();
-    pipes.show();
-    delay(100);
-  }
-
-  pipes.setNumber(0);
-  pipes.clear();
+  pipes.setPipeColour(COLOUR);
+  pipes.writeNumber(0);
   pipes.show();
 }
 
@@ -68,15 +50,12 @@ void loop() {
       return;
     }
   }
-
   
-  /* EVERY_N_MILLISECONDS(10) { ++pipes; }*/
   EVERY_N_MILLISECONDS( 50 ) { gHue++; } // slowly cycle the "base color" through the rainbow
 
   pipes.writeFade(4);
-  /* pipes.write();*/
-  pipes.writeRainbow(gHue);
+  if (RAINBOW) 
+    pipes.writeRainbow(gHue);
 
   pipes.show();
-
 }

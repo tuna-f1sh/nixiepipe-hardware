@@ -41,6 +41,10 @@ uint32_t NixiePipe::getNumber(void) {
   return this->modNum;
 }
 
+uint32_t NixiePipe::getMax(void) {
+  return this->maxNum;
+}
+
 void NixiePipe::setBrightness(uint8_t nvalue) {
   brightness = nvalue;
   FastLED.setBrightness(brightness);
@@ -48,19 +52,23 @@ void NixiePipe::setBrightness(uint8_t nvalue) {
 
 void NixiePipe::setPipeNumber(uint8_t n, uint8_t num) {
   int16_t newd;
-  newd = num - pipeNum[n];
-  newd *= powint(10,n);
-  // pserial->print("setPipeNumber: ");
-  // pserial->println(num);
-  // pserial->print("PipeNum: ");
-  // pserial->println(pipeNum[n]);
-  // pserial->print("Newd: ");
-  // pserial->println(newd);
 
-  pipeNum[n] = num; // update number reference
-  this->modNum += newd; // update module reference number
-  // pserial->print("modNum: ");
-  // pserial->println(modNum);
+  // can number can be writen
+  if (num <= PIXEL_OFFSET) {
+    newd = num - pipeNum[n];
+    newd *= powint(10,n);
+    // pserial->print("setPipeNumber: ");
+    // pserial->println(num);
+    // pserial->print("PipeNum: ");
+    // pserial->println(pipeNum[n]);
+    // pserial->print("Newd: ");
+    // pserial->println(newd);
+
+    pipeNum[n] = num; // update number reference
+    this->modNum += newd; // update module reference number
+    // pserial->print("modNum: ");
+    // pserial->println(modNum);
+  }
 }
 
 void NixiePipe::setNumber(uint32_t num) {
@@ -184,6 +192,11 @@ void NixiePipe::clearPipe(uint8_t n) {
 CRGB* NixiePipe::getPixels() {
   return pixels;
 }
+
+CRGB* NixiePipe::getPipePixels(uint8_t n) {
+  return &pixels[n * PIXEL_OFFSET];
+}
+
 
 CRGBSet NixiePipe::getPipe(uint8_t n) {
   CRGB *ppipe = &pixels[n * PIXEL_OFFSET];

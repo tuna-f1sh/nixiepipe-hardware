@@ -7,7 +7,7 @@ BOARD_TAG    = uno
 # # # FTDI
 # MONITOR_PORT = /dev/tty.SLAB*
 
-ARDUINO_LIBS = Time DS3232RTC Wire FastLED
+ARDUINO_LIBS = Time DS3232RTC Wire FastLED NixiePipe
 AVRDUDE_OPTS = -V
 
 # compiler flags for FastLED lib

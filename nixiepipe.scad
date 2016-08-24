@@ -1,10 +1,10 @@
 include <shapes.scad>
 include <laser-functions.scad>
 $fn=50;
-export = false;
+export = true;
 enumbers = false;
-eblank = true;
-teeth = true;
+eblank = false;
+teeth = false;
 
 LBD=0.23;
 MATZ=3.15;
@@ -21,6 +21,9 @@ SOFF = 4;
 pcbh = PCBZ + SOFF + WS_H;
 PCB_TABZ = 8;
 bspace = 8;
+
+SCREWDIA = 3 + 0.2;
+STUDDIA = 4;
 
 number=9;
 WIDTH = 40 + (WS_SPACE);
@@ -41,13 +44,13 @@ DLY = (wd / YSlots);
 DLZ = (dp / ZSlots);
 
 if (!export) {
-  diffuser(0);
+  diffuser(-1);
   translate([0,0,MATZ]) stack(number);
   translate([0,0,MATZ*(number+2)]) face(1);
   translate([0,0,-MATZ]) face(0);
-  translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
-  translate([0,0,MATZ*(number+1)]) diffuser(0);
-  translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();
+  /* translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
+  translate([0,0,MATZ*(number+1)]) diffuser(-1);
+  /* translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
   /* translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H,dp/2-MATZ*3/2]) rotate([90,180,0]) pcb();*/
@@ -119,10 +122,12 @@ module diffuser(number) {
       rotate([180,180,0]) translate([0,0,-MATZ]) linear_extrude(height = MATZ*3) text("8",size=38,halign="center",valign="center");
     } else if (number == 9) {
       rotate([180,180,0]) translate([0,0,-MATZ]) linear_extrude(height = MATZ*3) text("9",size=38,halign="center",valign="center");
+    } else if (number == 10) {
+      rotate([180,180,0]) translate([0,0,-MATZ]) linear_extrude(height = MATZ*3) text("0",size=38,halign="center",valign="center");
     }
     if ((abs(number) >= 1)) {
       if (!teeth) {
-        screw_holes();
+        screw_holes(SCREWDIA);
       }
     }
   }
@@ -182,7 +187,11 @@ module face(front) {
     // pcb slot
     translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ-LBD,MATZ],center=true);
     if (!teeth) {
-      screw_holes();
+      if (front) {
+        screw_holes(SCREWDIA);
+      } else {
+        screw_holes(STUDDIA);
+      }
     }
   }
 }
@@ -248,10 +257,10 @@ module stack(number) {
   }
 }
 
-module screw_holes() {
+module screw_holes(dia) {
   hloc = (5+3.2-LBD) / 2;
-  translate([wd/2-hloc,ht/2-hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
-  translate([-wd/2+hloc,-ht/2+hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
-  translate([wd/2-hloc,-ht/2+hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
-  translate([-wd/2+hloc,ht/2-hloc,0]) cylinder(r=3.2/2,h=MATZ,center=true);
+  translate([wd/2-hloc,ht/2-hloc,0]) cylinder(r=(dia-LBD)/2,h=MATZ,center=true);
+  translate([-wd/2+hloc,-ht/2+hloc,0]) cylinder(r=(dia-LBD)/2,h=MATZ,center=true);
+  translate([wd/2-hloc,-ht/2+hloc,0]) cylinder(r=(dia-LBD)/2,h=MATZ,center=true);
+  translate([-wd/2+hloc,ht/2-hloc,0]) cylinder(r=(dia-LBD)/2,h=MATZ,center=true);
 }

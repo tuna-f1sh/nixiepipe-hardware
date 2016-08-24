@@ -14,7 +14,7 @@
 #define COLOR_ORDER         GRB
 #define PIXEL_OFFSET        9 // pixel index offset per module
 
-#define NUM2IDX(x)    x - 1
+#define NUM2IDX(x)          PIXEL_OFFSET - x
 
 inline uint8_t num2idx(uint8_t num);
 
@@ -46,7 +46,8 @@ class NixiePipe {
       clearPipe(uint8_t n),
       clear();
     CRGB
-      *getPixels(void);
+      *getPixels(void),
+      *getPipePixels(uint8_t n);
     CRGBSet
       getPipe(uint8_t n);
     NixiePipe
@@ -57,7 +58,9 @@ class NixiePipe {
       operator--(int);
       // &operator>>(const NixiePipe &rhs),
       // &operator<<(const NixiePipe &rhs);
-    uint32_t getNumber(void);
+    uint32_t 
+      getNumber(void),
+      getMax(void);
 
   private:
     const uint8_t
