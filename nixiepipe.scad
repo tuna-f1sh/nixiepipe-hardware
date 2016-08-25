@@ -185,7 +185,12 @@ module face(front) {
       scale([0.8,0.8,2]) diffuser(0);
     }
     // pcb slot
-    translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ-LBD,MATZ],center=true);
+    if (front) {
+      translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ-LBD,MATZ],center=true);
+    } else { // slightly larger for rear acrylic
+      translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ-LBD+0.15,MATZ],center=true);
+    }
+
     if (!teeth) {
       if (front) {
         screw_holes(SCREWDIA);
