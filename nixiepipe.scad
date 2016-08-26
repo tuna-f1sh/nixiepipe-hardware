@@ -21,6 +21,7 @@ SOFF = 4;
 pcbh = PCBZ + SOFF + WS_H;
 PCB_TABZ = 8;
 bspace = 8;
+tab = false;
 
 SCREWDIA = 3 + 0.2;
 STUDDIA = 4;
@@ -53,8 +54,8 @@ if (!export) {
   /* translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
   /* translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();*/
-  /* translate([0,ht/2+WS_PIPEH+WS_H,dp/2-MATZ*3/2]) rotate([90,180,0]) pcb();*/
-  translate([148.5,45,-89.2]) rotate([90,180,0]) import("nixie-pipe-pcb.stl");
+  translate([0,ht/2+WS_PIPEH+WS_H,dp/2-MATZ*3/2]) rotate([90,180,0]) pcb();
+  /* translate([148.5,45,-89.2]) rotate([90,180,0]) import("nixie-pipe-pcb.stl");*/
   echo ("<b>Height:</b>",ht,"<b>Width:</b>",wd,"<b>Depth:</b>",dp);
 } else {
   if (enumbers) {
@@ -138,7 +139,11 @@ module pcb() {
   difference() {
     union() {
       roundedBox([wd,pcbd,PCBZ],2);
-      translate([0,-pcbd/2-PCB_TABZ/2,0]) roundedBox([wd-10,MATZ*2+PCB_TABZ,PCBZ],2);
+      if (tab) {
+        translate([0,-pcbd/2-PCB_TABZ/2,0]) roundedBox([wd-10,MATZ*2+PCB_TABZ,PCBZ],2);
+      } else {
+        translate([0,-pcbd/2,0]) roundedBox([wd-10,MATZ*2,PCBZ],0.5);
+      }
       translate([0,pcbd/2,0]) roundedBox([wd-10,MATZ*2,PCBZ],0.5);
     }
     translate([0,pcbd/2-MATZ*3/2,0]) {
@@ -188,7 +193,13 @@ module face(front) {
     if (front) {
       translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ-LBD,MATZ],center=true);
     } else { // slightly larger for rear acrylic
-      translate([0,ht/2+WS_PIPEH+WS_H+1,0]) cube([wd-10+LBD,PCBZ-LBD+0.15,MATZ],center=true);
+      translate([0,ht/2+WS_PIPEH+WS_H+1,0]) {
+        cube([wd-10+LBD,PCBZ-LBD+0.15,MATZ],center=true);
+          translate([(wd-10)/2,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
+          translate([(wd-10)/2*-1,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
+          translate([(wd-10)/2,(PCBZ-LBD)/2*-1,-MATZ]) cylinder(r=0.4,h=MATZ*2);
+          translate([(wd-10)/2*-1,(PCBZ-LBD)/2*-1,-MATZ]) cylinder(r=0.4,h=MATZ*2);
+      }
     }
 
     if (!teeth) {
