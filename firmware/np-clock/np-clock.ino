@@ -6,7 +6,7 @@
 #include <NixiePipe.h>
 
 #define LED_PIN       6
-#define NUM_PIPES     1
+#define NUM_PIPES     4
 #define BRIGHTNESS    255
 
 uint8_t gHue = 0;
@@ -43,11 +43,10 @@ void setup() {
   pipes.clear();
   pipes.setBrightness(BRIGHTNESS);
   pipes.setPipeColour(CRGB::White);
-  pipes.writePipeNumber(0,1);
+  pipes.writeNumber(1);
   pipes.show();
 
   for (int i = 0; i < 10; i++) {
-    pipes.setPipeNumber(0,i);
     pipes.shift(1);
     pipes.setPipeNumber(0,i);
     pipes.write();
@@ -55,7 +54,6 @@ void setup() {
     delay(100);
   }
   for (int i = 9; i > 0; i--) {
-    pipes.setPipeNumber(0,i);
     pipes.shift(1);
     pipes.setPipeNumber(0,i);
     pipes.write();
@@ -72,26 +70,24 @@ void loop() {
   tmElements_t tm; // time struct holder
   static uint8_t i = 1;
 
-  /* EVERY_N_SECONDS(1) {*/
-  /*   if (RTC.read(tm) == 0) {*/
-  /*     Serial.print(tm.Hour);*/
-  /*     Serial.print(":");*/
-  /*     Serial.println(tm.Minute);*/
-  /*     setTime(tm);*/
-  /*   } else {*/
-  /*     // rtc isn't reading*/
-  /*     Serial.println("RTC read error!  Please check the circuitry.");*/
-  /*     Serial.println();*/
-  /*     pipes.setNumber(0);*/
-  /*     pipes.writeSolid(CRGB::Red); // all red*/
-  /*     pipes.show();*/
-  /*     return;*/
-  /*   }*/
-  /* }*/
+  EVERY_N_SECONDS(1) {
+    if (RTC.read(tm) == 0) {
+      Serial.print(tm.Hour);
+      Serial.print(":");
+      Serial.println(tm.Minute);
+      setTime(tm);
+    } else {
+      // rtc isn't reading
+      Serial.println("RTC read error!  Please check the circuitry.");
+      Serial.println();
+      pipes.setNumber(0);
+      pipes.writeSolid(CRGB::Red); // all red
+      pipes.show();
+      return;
+    }
+  }
   
-  EVERY_N_SECONDS(1) { pipes.setPipeNumber(0,i);i = ((i < 9) ? (i + 1) : 0); }
   
-  /* EVERY_N_MILLISECONDS(10) { ++pipes; }*/
   EVERY_N_MILLISECONDS( 100 ) { gHue++; } // slowly cycle the "base color" through the rainbow
 
   pipes.writeFade(4);
