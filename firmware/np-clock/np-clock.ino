@@ -11,49 +11,87 @@
 #define MAIN_RGB      CRGB::White
 #define DEBOUNCE      200
 
+#define ST_ANY        -1
+#define ST_CLOCK      0
+#define ST_SETTIME    1
+#define ST_SETALARM   2
+#define ST_SETCOLOUR  3
+#define ST_SETCOUNT   4
+#define ST_COUNTER    5
+#define ST_CUPDATE    6
+#define ST_TERM       10
+
+#define EV_ANY        -1
+#define EV_NONE       0
+#define EV_TB0_PRESS  10
+#define EV_TB1_PRESS  11
+#define EV_TB0_HOLD   12
+#define EV_TB1_HOLD   13
+#define EV_COUNTEND   14
+
+typedef struct {
+  int st;
+  int ev;
+  /* int (*fn)(void);*/
+  int nst;
+} tTransition;
+
+tTransition trans[] = {
+  { ST_CLOCK, EV_TB0_PRESS, ST_SETTIME },
+  { ST_CLOCK, EV_TB0_HOLD, ST_SETCOLOUR },
+  { ST_CLOCK, EV_TB1_PRESS, ST_SETCOUNT },
+  { ST_CLOCK, EV_TB1_HOLD, ST_SETALARM },
+  { ST_SETTIME, EV_ANY, ST_CLOCK },
+  { ST_SETALARM, EV_ANY, ST_CLOCK },
+  { ST_SETCOUNT, EV_ANY, ST_COUNTER },
+  { ST_SETCOLOUR, EV_ANY, ST_CLOCK },
+  { ST_COUNTER, EV_COUNTEND, ST_CLOCK },
+  { ST_COUNTER, EV_TB0_PRESS, ST_CLOCK },
+  { ST_COUNTER, EV_TB0_HOLD, ST_CLOCK },
+  { ST_COUNTER, EV_TB1_PRESS, ST_CUPDATE },
+  { ST_COUNTER, EV_TB1_HOLD, ST_CLOCK },
+  { ST_CUPDATE, EV_ANY, ST_COUNTER },
+};
+
+#define TRANS_COUNT (sizeof(trans)/sizeof(*trans))
+
 CRGB main_rgb = MAIN_RGB;
 uint8_t gHue = 0;
-bool tb0Flag = false;
-bool tb1Flag = false;
-bool setTimeFlag = false;
-bool setColourFlag = false;
-bool setAlarmFlag = false;
-bool setCounterFlag = false;
 bool alarmFlag = false;
-bool counterFlag = false;
+
+int8_t event = EV_NONE;
+int8_t state = ST_CLOCK;
 
 NixiePipe pipes = NixiePipe(NUM_PIPES,LED_PIN);
 
-static void processTB0(void) {
+static int8_t processTB0(void) {
   uint32_t hold = millis();
+  int8_t event = EV_NONE;
 
-  while (!digitalRead(PIPE_TB0) && !setColourFlag) {
+  while (!digitalRead(PIPE_TB0)) {
     if ((millis() - hold < 4000) && (millis() - hold > 200)) {
-      counterFlag = false;
-      setTimeFlag = true;
+      event = EV_TB0_PRESS;
     } else if ((millis() - hold > 4000)) {
-      setTimeFlag = false;
-      setColourFlag = true;
+      event = EV_TB0_HOLD;
     }
   }
 
-  tb0Flag = false;
+  return event;
 }
 
-static void processTB1(void) {
+static int8_t processTB1(void) {
   uint32_t hold = millis();
+  int8_t event = EV_NONE;
 
-  while (!digitalRead(PIPE_TB1) && !setAlarmFlag) {
+  while (!digitalRead(PIPE_TB1)) {
     if ((millis() - hold < 4000) && (millis() - hold > 200)) {
-      setCounterFlag = true;
+      event = EV_TB1_PRESS;
     } else if ((millis() - hold > 4000)) {
-      setCounterFlag = false;
-      counterFlag = false;
-      setAlarmFlag = true;
+      event = EV_TB1_HOLD;
     }
   }
 
-  tb1Flag = false;
+  return event;
 }
 
 static inline void writeTime(tmElements_t tm) {
@@ -91,7 +129,7 @@ static void changeTime(tmElements_t *tm, int8_t dir) {
 }
 
 
-static void setTime(tmElements_t &tm) {
+static int8_t setTime(tmElements_t &tm) {
   uint32_t entry = millis(); // entry time - reset each button press
   uint32_t hold = millis(); // hold timer to increase time change
   uint32_t debounce = 0; // debouce holder
@@ -143,12 +181,13 @@ static void setTime(tmElements_t &tm) {
 
   // save to RTC, clear ISR flag and resume interrupts
   RTC.write(tm);
-  setTimeFlag = false;
   interrupts();
+
+  return ST_CLOCK;
 
 }
 
-static void setAlarm(tmElements_t tm) {
+static int8_t setAlarm(tmElements_t tm) {
   uint32_t entry = millis(); // entry time - reset each button press
   uint32_t hold = millis(); // hold timer to increase time change
   uint32_t debounce = 0; // debouce holder
@@ -202,12 +241,13 @@ static void setAlarm(tmElements_t tm) {
 
   // save to RTC, clear ISR flag and resume interrupts
   RTC.setAlarm(ALM1_MATCH_HOURS, 0, alarm.Minute, alarm.Hour, 0);
-  setAlarmFlag = false;
   interrupts();
+
+  return ST_CLOCK;
 
 }
 
-static void setColour(void) {
+static int8_t setColour(void) {
   uint32_t entry = millis(); // entry time - reset each button press
   uint32_t debouce = 0;
   uint8_t hue = 0;
@@ -240,20 +280,20 @@ static void setColour(void) {
     }
   }
 
-  setColourFlag = false;
   interrupts();
+
+  return ST_CLOCK;
 }
 
-static void setCounter(void) {
+static int8_t setCounter(void) {
   uint32_t entry = millis(); // entry time - reset each button press
   uint32_t hold = millis(); // hold timer to increase time change
   uint32_t debounce = 0; // debouce holder
   uint8_t dperiod = DEBOUNCE; // debouce period
 
   // blank the counter if it isn't running
-  if (!counterFlag)
+  if (state != ST_CUPDATE)
     pipes.setNumber(0);
-  counterFlag = true;
 
   // run for 5s then save the time to RTC
   while (millis() - entry < 5000) {
@@ -285,9 +325,10 @@ static void setCounter(void) {
     pipes.show();
   }
 
-  setCounterFlag = false;
   pipes.setPipeColour(main_rgb);
   interrupts();
+
+  return ST_COUNTER;
 }
 
 void setup() {
@@ -322,83 +363,94 @@ void setup() {
   pipes.show();
 }
 
-void loop() {
-  static tmElements_t tm; // time struct holder
+static int8_t getEvent(void) {
   static unsigned long tb0db = 0;
   unsigned long tb0int = millis();
   static unsigned long tb1db = 0;
   unsigned long tb1int = millis();
+  int8_t event = EV_NONE;
 
   if (!digitalRead(PIPE_TB0) & (tb0int - tb0db > DEBOUNCE)) {
-    tb0Flag = true;
-    tb0db = tb0int;
+    event = processTB0();
+    tb0db = millis();
+  } else if (!digitalRead(PIPE_TB1) & (tb1int - tb1db > DEBOUNCE)) {
+    event = processTB1();
+    tb1db = millis();
   }
 
-  if (!digitalRead(PIPE_TB1) & (tb1int - tb1db > DEBOUNCE)) {
-    tb1Flag = true;
-    tb1db = tb1int;
+  if ((state == ST_COUNTER) && (pipes.getNumber() == 0)) {
+    event = EV_COUNTEND;
   }
 
-  // Process interrupt button call
-  if (tb0Flag) {
-    processTB0();
+  return event;
+}
+
+
+void loop() {
+  static tmElements_t tm; // time struct holder
+  static CEveryNSeconds everySecond(1);
+
+  event = getEvent();
+  for (uint8_t i = 0; i < TRANS_COUNT; i++) {
+      if ((state == trans[i].st) || (ST_ANY == trans[i].st)) {
+          if ((event == trans[i].ev) || (EV_ANY == trans[i].ev)) {
+              state = trans[i].nst;
+              break;
+          }
+      }
   }
 
-  if (setTimeFlag && !counterFlag) {
-    setTime(tm);
-  } else if (setColourFlag) {
-    setColour();
-  }
-
-  if (tb1Flag) {
-    processTB1();
-  }
-
-  if (setCounterFlag) {
-    setCounter();
-  } else if (setAlarmFlag) {
-    setAlarm(tm);
-  }
-
-  EVERY_N_SECONDS(1) {
-    if (counterFlag) {
-      if (pipes.getNumber() > 0) {
+  switch (state) {
+    case ST_CLOCK:
+      if (everySecond) {
+        if (RTC.read(tm) == 0) {
+          Serial.print(tm.Hour);
+          Serial.print(":");
+          Serial.println(tm.Minute);
+          pipes.setPipeColour(main_rgb);
+          // check alarm
+          if (RTC.alarm(ALARM_1) || alarmFlag || RTC.alarm(ALARM_2)) {
+            Serial.println("ALARM!");
+            alarmFlag = true;
+            // flash off every second
+            if (tm.Second % 2 == 0)
+              pipes.setPipeColour(CRGB::Black);
+            // disable alarm flag after 1 minute
+            if (tm.Second == 59)
+              alarmFlag = false;
+          }
+          writeTime(tm);
+        } else {
+          // rtc isn't reading
+          Serial.println("RTC read error!  Please check the circuitry.");
+          Serial.println();
+          pipes.setNumber(0);
+          pipes.writeSolid(CRGB::Red); // all red
+          pipes.show();
+          return;
+        }
+      }
+      break;
+    case ST_SETTIME:
+      setTime(tm);
+      break;
+    case ST_SETCOLOUR:
+      setColour();
+      break;
+    case ST_SETALARM:
+      setAlarm(tm);
+      break;
+    case (ST_SETCOUNT): case (ST_CUPDATE):
+      setCounter();
+      break;
+    case ST_COUNTER:
+      if (everySecond) {
         if (pipes.getNumber() <= 10)
           pipes.setPipeColour(CRGB::Red);
         --pipes;
-      } else {
-        counterFlag = false;
       }
-    } else {
-      if (RTC.read(tm) == 0) {
-        Serial.print(tm.Hour);
-        Serial.print(":");
-        Serial.println(tm.Minute);
-        pipes.setPipeColour(main_rgb);
-        // check alarm
-        if (RTC.alarm(ALARM_1) || alarmFlag || RTC.alarm(ALARM_2)) {
-          Serial.println("ALARM!");
-          alarmFlag = true;
-          // flash off every second
-          if (tm.Second % 2 == 0)
-            pipes.setPipeColour(CRGB::Black);
-          // disable alarm flag after 1 minute
-          if (tm.Second == 59)
-            alarmFlag = false;
-        }
-        writeTime(tm);
-      } else {
-        // rtc isn't reading
-        Serial.println("RTC read error!  Please check the circuitry.");
-        Serial.println();
-        pipes.setNumber(0);
-        pipes.writeSolid(CRGB::Red); // all red
-        pipes.show();
-        return;
-      }
-    }
+      break;
   }
-  
   
   EVERY_N_MILLISECONDS( 100 ) { gHue++; } // slowly cycle the "base color" through the rainbow
 
