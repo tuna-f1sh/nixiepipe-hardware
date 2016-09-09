@@ -3,6 +3,7 @@
 Gerber/
 exports/
 build*
+shapes3d/
 
 *.bmp
 *.png
