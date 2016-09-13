@@ -1,13 +1,13 @@
 include <shapes.scad>
 include <laser-functions.scad>
 $fn=50;
-export = true;
+export = false;
 enumbers = false;
 eblank = false;
 teeth = false;
 
 LBD=0.23;
-MATZ=3.15;
+MATZ=3.11;
 WOODZ=3.15;
 
 WS2812 = 5;
@@ -48,7 +48,7 @@ if (!export) {
   diffuser(-1);
   translate([0,0,MATZ]) stack(number);
   translate([0,0,MATZ*(number+2)]) face(1);
-  translate([0,0,-MATZ]) face(0);
+  translate([0,0,-WOODZ]) face(0);
   /* translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
   translate([0,0,MATZ*(number+1)]) diffuser(-1);
   /* translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
@@ -138,13 +138,13 @@ module pcb() {
   pcbd = dp - (WOODZ * 2) - LBD;
   difference() {
     union() {
-      roundedBox([wd,pcbd,PCBZ],2);
+      roundedBox([wd,pcbd-0.1,PCBZ],2);
       if (tab) {
-        translate([0,-pcbd/2-PCB_TABZ/2,0]) roundedBox([wd-10,MATZ*2+PCB_TABZ,PCBZ],2);
+        translate([0,-pcbd/2-PCB_TABZ/2,0]) roundedBox([wd-10,WOODZ*2+PCB_TABZ,PCBZ],2);
       } else {
-        translate([0,-pcbd/2,0]) roundedBox([wd-10,MATZ*2,PCBZ],0.5);
+        translate([0,-pcbd/2,0]) roundedBox([wd-10,WOODZ*2,PCBZ],0.5);
       }
-      translate([0,pcbd/2,0]) roundedBox([wd-10,MATZ*2,PCBZ],0.5);
+      translate([0,pcbd/2,0]) roundedBox([wd-10,WOODZ*2,PCBZ],0.5);
     }
     translate([0,pcbd/2-MATZ*3/2,0]) {
       for (x = [1:1:9]) {
