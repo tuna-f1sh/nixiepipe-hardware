@@ -1,14 +1,15 @@
 include <shapes.scad>
 include <laser-functions.scad>
 $fn=50;
-export = false;
+
+export = true;
 enumbers = false;
 eblank = false;
 teeth = false;
 
-LBD=0.23;
-MATZ=3.11;
-WOODZ=3.15;
+LBD=0.23; // general kerf diameter
+MATZ=3.11; // acrylic thickness
+WOODZ=3.15; // wood thickness
 
 WS2812 = 5;
 WS_BORDER = 3;
@@ -24,7 +25,7 @@ bspace = 8;
 tab = false;
 
 SCREWDIA = 3 + 0.2;
-STUDDIA = 4;
+STUDDIA = 5;
 
 number=9;
 WIDTH = 40 + (WS_SPACE);
@@ -58,29 +59,30 @@ if (!export) {
   /* translate([148.5,45,-89.2]) rotate([90,180,0]) import("nixie-pipe-pcb.stl");*/
   echo ("<b>Height:</b>",ht,"<b>Width:</b>",wd,"<b>Depth:</b>",dp);
 } else {
-  if (enumbers) {
-    for (x = [1:1:number]) {
-      translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);
-    }
-  } else if (eblank) {
-    projection() diffuser(-1);
-  } else {
-    if (teeth) {
-      projection() side();
-      translate([dp+1,0,0]) {
-        projection() side();
-        translate([(dp+1)+MATZ*2+1,0,0]) { 
-          projection() face(0);
-          translate([wd+1+MATZ*2,0,0]) projection() face(1);
-        }
-      }
-    } else {
-      projection() face(0);
-      translate([wd+1,0,0]) projection() face(1);
-    }
-  }
+  /* if (enumbers) {*/
+  /*   for (x = [1:1:number]) {*/
+  /*     translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);*/
+  /*   }*/
+  /* } else if (eblank) {*/
+  /*   projection() diffuser(-1);*/
+  /* } else {*/
+  /*   if (teeth) {*/
+  /*     projection() side();*/
+  /*     translate([dp+1,0,0]) {*/
+  /*       projection() side();*/
+  /*       translate([(dp+1)+MATZ*2+1,0,0]) { */
+  /*         projection() face(0);*/
+  /*         translate([wd+1+MATZ*2,0,0]) projection() face(1);*/
+  /*       }*/
+  /*     }*/
+  /*   } else {*/
+  /*     projection() face(0);*/
+  /*     translate([wd+1,0,0]) projection() face(1);*/
+  /*   }*/
+  /* }*/
     /* projection() pcb();*/
 }
+frame(1);
 
 module middle() {
   translate([0,ht/2,0]) hexagon(WS_PIPEH*2,MATZ);
@@ -138,7 +140,7 @@ module pcb() {
   pcbd = dp - (WOODZ * 2) - LBD;
   difference() {
     union() {
-      roundedBox([wd,pcbd-0.1,PCBZ],2);
+      roundedBox([wd,pcbd,PCBZ],2);
       if (tab) {
         translate([0,-pcbd/2-PCB_TABZ/2,0]) roundedBox([wd-10,WOODZ*2+PCB_TABZ,PCBZ],2);
       } else {
@@ -269,9 +271,17 @@ module pixel() {
 
 module stack(number) {
   for (x = [1:1:number]) {
-    translate([0,0,MATZ*(9-x)]) diffuser(x);
+    translate([0,0,MATZ*(number-x)]) diffuser(x);
   }
 }
+
+module frame(front) {
+  difference() {
+    roundedBox([(WIDTH*4)-LBD,ht,MATZ],5);
+    scale([0.95,0.8,2]) roundedBox([(WIDTH*4)-LBD,ht,MATZ],5);
+  }
+}
+
 
 module screw_holes(dia) {
   hloc = (5+3.2-LBD) / 2;

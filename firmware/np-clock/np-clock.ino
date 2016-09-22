@@ -55,14 +55,14 @@ tTransition trans[] = {
 
 #define TRANS_COUNT (sizeof(trans)/sizeof(*trans))
 
-CRGB main_rgb = MAIN_RGB;
+CRGB gMainRGB = MAIN_RGB;
 uint8_t gHue = 0;
 bool alarmFlag = false;
 
-int8_t event = EV_NONE;
-int8_t state = ST_CLOCK;
+int8_t gState = ST_CLOCK;
+int8_t gEvent = EV_NONE;
 
-NixiePipe pipes = NixiePipe(NUM_PIPES,LED_PIN);
+NixiePipe pipes = NixiePipe(NUM_PIPES);
 
 static int8_t processTB0(void) {
   uint32_t hold = millis();
@@ -95,7 +95,10 @@ static int8_t processTB1(void) {
 }
 
 static inline void writeTime(tmElements_t tm) {
-  pipes.setNumber((tm.Hour * 100) + tm.Minute);
+  if (NUM_PIPES <= 5)
+    pipes.setNumber((tm.Hour * 100) + tm.Minute);
+  else
+    pipes.setNumber((tm.Hour * 10000) + (tm.Minute * 100) + tm.Second);
 }
 
 static void changeTime(tmElements_t *tm, int8_t dir) {
@@ -259,8 +262,8 @@ static int8_t setColour(void) {
       if ((millis() - debouce) > 10) {
         entry = millis();
 
-        hsv2rgb_rainbow(hsv,main_rgb);
-        pipes.writeSolid(main_rgb);
+        hsv2rgb_rainbow(hsv,gMainRGB);
+        pipes.writeSolid(gMainRGB);
         pipes.show();
         hsv.hue = ++hue;
 
@@ -270,8 +273,8 @@ static int8_t setColour(void) {
       if ((millis() - debouce) > 10) {
         entry = millis();
 
-        hsv2rgb_rainbow(hsv,main_rgb);
-        pipes.writeSolid(main_rgb);
+        hsv2rgb_rainbow(hsv,gMainRGB);
+        pipes.writeSolid(gMainRGB);
         pipes.show();
         hsv.sat = --sat;
 
@@ -292,7 +295,7 @@ static int8_t setCounter(void) {
   uint8_t dperiod = DEBOUNCE; // debouce period
 
   // blank the counter if it isn't running
-  if (state != ST_CUPDATE)
+  if (gState != ST_CUPDATE)
     pipes.setNumber(0);
 
   // run for 5s then save the time to RTC
@@ -325,7 +328,7 @@ static int8_t setCounter(void) {
     pipes.show();
   }
 
-  pipes.setPipeColour(main_rgb);
+  pipes.setPipeColour(gMainRGB);
   interrupts();
 
   return ST_COUNTER;
@@ -335,9 +338,10 @@ void setup() {
   Serial.begin(9600);
   pipes.passSerial(Serial);
 
+  pipes.begin<LED_PIN>();
   pipes.clear();
   pipes.setBrightness(BRIGHTNESS);
-  pipes.setPipeColour(MAIN_RGB);
+  pipes.setPipeColour(gMainRGB);
   pipes.show();
 
   for (int i = 0; i < 10; i++) {
@@ -378,7 +382,7 @@ static int8_t getEvent(void) {
     tb1db = millis();
   }
 
-  if ((state == ST_COUNTER) && (pipes.getNumber() == 0)) {
+  if ((gState == ST_COUNTER) && (pipes.getNumber() == 0)) {
     event = EV_COUNTEND;
   }
 
@@ -390,24 +394,24 @@ void loop() {
   static tmElements_t tm; // time struct holder
   static CEveryNSeconds everySecond(1);
 
-  event = getEvent();
+  gEvent = getEvent();
   for (uint8_t i = 0; i < TRANS_COUNT; i++) {
-      if ((state == trans[i].st) || (ST_ANY == trans[i].st)) {
-          if ((event == trans[i].ev) || (EV_ANY == trans[i].ev)) {
-              state = trans[i].nst;
+      if ((gState == trans[i].st) || (ST_ANY == trans[i].st)) {
+          if ((gEvent == trans[i].ev) || (EV_ANY == trans[i].ev)) {
+              gState = trans[i].nst;
               break;
           }
       }
   }
 
-  switch (state) {
+  switch (gState) {
     case ST_CLOCK:
       if (everySecond) {
         if (RTC.read(tm) == 0) {
           Serial.print(tm.Hour);
           Serial.print(":");
           Serial.println(tm.Minute);
-          pipes.setPipeColour(main_rgb);
+          pipes.setPipeColour(gMainRGB);
           // check alarm
           if (RTC.alarm(ALARM_1) || alarmFlag || RTC.alarm(ALARM_2)) {
             Serial.println("ALARM!");
