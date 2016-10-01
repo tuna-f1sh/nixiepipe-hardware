@@ -68,7 +68,7 @@ static int8_t processTB0(void) {
   uint32_t hold = millis();
   int8_t event = EV_NONE;
 
-  while (!digitalRead(PIPE_TB0)) {
+  while (!digitalRead(PIPE_TB0) && (event != EV_TB0_HOLD) ) {
     if ((millis() - hold < 4000) && (millis() - hold > 200)) {
       event = EV_TB0_PRESS;
     } else if ((millis() - hold > 4000)) {
@@ -83,7 +83,7 @@ static int8_t processTB1(void) {
   uint32_t hold = millis();
   int8_t event = EV_NONE;
 
-  while (!digitalRead(PIPE_TB1)) {
+  while (!digitalRead(PIPE_TB1) && (event != EV_TB1_HOLD) ) {
     if ((millis() - hold < 4000) && (millis() - hold > 200)) {
       event = EV_TB1_PRESS;
     } else if ((millis() - hold > 4000)) {
