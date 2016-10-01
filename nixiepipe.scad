@@ -6,6 +6,7 @@ export = true;
 enumbers = false;
 eblank = false;
 teeth = false;
+pcb = true;
 
 LBD=0.23; // general kerf diameter
 MATZ=3.11; // acrylic thickness
@@ -20,9 +21,9 @@ WS_H = 1.6;
 PCBZ = 1.6;
 SOFF = 4;
 pcbh = PCBZ + SOFF + WS_H;
-PCB_TABZ = 8;
+PCB_TABZ = 10;
 bspace = 8;
-tab = false;
+tab = true;
 
 SCREWDIA = 3 + 0.2;
 STUDDIA = 5;
@@ -59,30 +60,32 @@ if (!export) {
   /* translate([148.5,45,-89.2]) rotate([90,180,0]) import("nixie-pipe-pcb.stl");*/
   echo ("<b>Height:</b>",ht,"<b>Width:</b>",wd,"<b>Depth:</b>",dp);
 } else {
-  /* if (enumbers) {*/
-  /*   for (x = [1:1:number]) {*/
-  /*     translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);*/
-  /*   }*/
-  /* } else if (eblank) {*/
-  /*   projection() diffuser(-1);*/
-  /* } else {*/
-  /*   if (teeth) {*/
-  /*     projection() side();*/
-  /*     translate([dp+1,0,0]) {*/
-  /*       projection() side();*/
-  /*       translate([(dp+1)+MATZ*2+1,0,0]) { */
-  /*         projection() face(0);*/
-  /*         translate([wd+1+MATZ*2,0,0]) projection() face(1);*/
-  /*       }*/
-  /*     }*/
-  /*   } else {*/
-  /*     projection() face(0);*/
-  /*     translate([wd+1,0,0]) projection() face(1);*/
-  /*   }*/
-  /* }*/
-    /* projection() pcb();*/
+  if (enumbers) {
+    for (x = [1:1:number]) {
+      translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);
+    }
+  } else if (eblank) {
+    projection() diffuser(-1);
+  } else if (pcb) {
+    projection() pcb();
+    
+  } else {
+    if (teeth) {
+      projection() side();
+      translate([dp+1,0,0]) {
+        projection() side();
+        translate([(dp+1)+MATZ*2+1,0,0]) {
+          projection() face(0);
+          translate([wd+1+MATZ*2,0,0]) projection() face(1);
+        }
+      }
+    } else {
+      projection() face(0);
+      translate([wd+1,0,0]) projection() face(1);
+    }
+  }
 }
-frame(1);
+/* frame(1);*/
 
 module middle() {
   translate([0,ht/2,0]) hexagon(WS_PIPEH*2,MATZ);
