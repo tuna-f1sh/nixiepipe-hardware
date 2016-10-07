@@ -1,4 +1,5 @@
-BOARD_TAG    = uno
+BOARDS_TXT = npboard.txt
+BOARD_TAG    = nixiepipe
 ISP_PROG = usbasp
 
 MCU = atmega328p
