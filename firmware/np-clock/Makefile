@@ -2,8 +2,8 @@ BOARDS_TXT = npboard.txt
 BOARD_TAG    = nixiepipe
 ISP_PROG = usbasp
 
-MCU = atmega328p
-F_CPU = 16000000
+#MCU = atmega328p
+# F_CPU = 16000000
 # MONITOR_PORT = /dev/tty.SLAB*
 
 ARDUINO_LIBS = Time DS3232RTC Wire FastLED NixiePipe

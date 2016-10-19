@@ -1,4 +1,4 @@
-update=Sunday, 31 July 2016 'pmt' 15:21:43
+update=17/10/2016 13:14:37
 version=1
 last_client=kicad
 [pcbnew]
@@ -60,3 +60,4 @@ LibName28=contrib
 LibName29=valves
 LibName30=tapMatrix
 LibName31=ws2812
+LibName32=ftdi
