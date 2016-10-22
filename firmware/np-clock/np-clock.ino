@@ -19,6 +19,8 @@
 #define ST_SETCOUNT   4
 #define ST_COUNTER    5
 #define ST_CUPDATE    6
+#define ST_RTCFAIL    7
+#define ST_FLASH      8
 #define ST_TERM       10
 
 #define EV_ANY        -1
@@ -28,6 +30,8 @@
 #define EV_TB0_HOLD   12
 #define EV_TB1_HOLD   13
 #define EV_COUNTEND   14
+#define EV_RTCFAIL    15
+#define EV_ALARM      16
 
 typedef struct {
   int st;
@@ -41,6 +45,15 @@ tTransition trans[] = {
   { ST_CLOCK, EV_TB0_HOLD, ST_SETCOLOUR },
   { ST_CLOCK, EV_TB1_PRESS, ST_SETCOUNT },
   { ST_CLOCK, EV_TB1_HOLD, ST_SETALARM },
+  { ST_CLOCK, EV_RTCFAIL, ST_RTCFAIL },
+  { ST_CLOCK, EV_ALARM, ST_FLASH },
+  { ST_CLOCK, EV_COUNTEND, ST_FLASH },
+  { ST_FLASH, EV_NONE, ST_CLOCK },
+  { ST_FLASH, EV_TB0_PRESS, ST_CLOCK },
+  { ST_FLASH, EV_TB0_HOLD, ST_CLOCK },
+  { ST_FLASH, EV_TB1_PRESS, ST_CLOCK },
+  { ST_FLASH, EV_TB1_HOLD, ST_CLOCK },
+  { ST_RTCFAIL, EV_NONE, ST_CLOCK },
   { ST_SETTIME, EV_ANY, ST_CLOCK },
   { ST_SETALARM, EV_ANY, ST_CLOCK },
   { ST_SETCOUNT, EV_ANY, ST_COUNTER },
@@ -57,7 +70,6 @@ tTransition trans[] = {
 
 CRGB gMainRGB = MAIN_RGB;
 uint8_t gHue = 0;
-bool alarmFlag = false;
 
 int8_t gState = ST_CLOCK;
 int8_t gEvent = EV_NONE;
@@ -101,31 +113,31 @@ static inline void writeTime(tmElements_t tm) {
     pipes.setNumber((tm.Hour * 10000) + (tm.Minute * 100) + tm.Second);
 }
 
-static void changeTime(tmElements_t *tm, int8_t dir) {
+static void changeTime(tmElements_t *ptm, int8_t dir) {
   for (int i = 0; i < abs(dir); ++i) {
     // UP
     if (dir >= 0) {
-      if (tm->Minute == 59) {
-        tm->Minute = 0;
-        if (tm->Hour == 23) {
-          tm->Hour = 0;
+      if (ptm->Minute == 59) {
+        ptm->Minute = 0;
+        if (ptm->Hour == 23) {
+          ptm->Hour = 0;
         } else {
-          ++(tm->Hour);
+          ++(ptm->Hour);
         }
       } else {
-        ++(tm->Minute);
+        ++(ptm->Minute);
       }
     // DOWN
     } else {
-      if (tm->Minute == 0) {
-        tm->Minute = 59;
-        if (tm->Hour == 0) {
-          tm->Hour = 23;
+      if (ptm->Minute == 0) {
+        ptm->Minute = 59;
+        if (ptm->Hour == 0) {
+          ptm->Hour = 23;
         } else {
-          --(tm->Hour);
+          --(ptm->Hour);
         }
       } else {
-        --(tm->Minute);
+        --(ptm->Minute);
       }
     }
   }
@@ -182,9 +194,8 @@ static int8_t setTime(tmElements_t &tm) {
     pipes.show();
   }
 
-  // save to RTC, clear ISR flag and resume interrupts
+  // save to RTC
   RTC.write(tm);
-  interrupts();
 
   return ST_CLOCK;
 
@@ -242,9 +253,8 @@ static int8_t setAlarm(tmElements_t tm) {
     pipes.show();
   }
 
-  // save to RTC, clear ISR flag and resume interrupts
+  // save to RTC
   RTC.setAlarm(ALM1_MATCH_HOURS, 0, alarm.Minute, alarm.Hour, 0);
-  interrupts();
 
   return ST_CLOCK;
 
@@ -283,8 +293,6 @@ static int8_t setColour(void) {
     }
   }
 
-  interrupts();
-
   return ST_CLOCK;
 }
 
@@ -292,34 +300,44 @@ static int8_t setCounter(void) {
   uint32_t entry = millis(); // entry time - reset each button press
   uint32_t hold = millis(); // hold timer to increase time change
   uint32_t debounce = 0; // debouce holder
-  uint8_t dperiod = DEBOUNCE; // debouce period
+  uint16_t dperiod = DEBOUNCE; // debouce period
 
   // blank the counter if it isn't running
   if (gState != ST_CUPDATE)
-    pipes.setNumber(0);
+    pipes.setNumber(1);
 
-  // run for 5s then save the time to RTC
-  while (millis() - entry < 5000) {
+  // run for 30s then escape
+  while (millis() - entry < 30000) {
 
     // Set pipes red to show setting clock
     pipes.writeSolid(CRGB::Green);
     
     if (!digitalRead(PIPE_TB0)) {
       if (millis() - hold > 1000) {
-        dperiod = 60;
+        if ((pipes.getNumber() % 30) == 0)
+          dperiod = 500;
+        else
+          dperiod = 60;
       } else {
         dperiod = DEBOUNCE;
       }
 
       if ((millis() - debounce) > dperiod ) {
         entry = millis();
-        ++pipes;
+        // jump to 1/2 minutes if we hit minutes whilst held down
+        if ( ((pipes.getNumber() % 30) == 0) && (millis() - hold > 1000) ) {
+          pipes.setNumber(pipes.getNumber() + 30);
+        // otherwise increment
+        } else {
+          ++pipes;
+        }
         debounce = entry;
       }
     } else if (!digitalRead(PIPE_TB1)) {
       if ((millis() - entry) > 1000 ) {
         entry = millis() + 6000;
-        delay(500);
+        // hold until exit to prevent re-trigger
+        while(!digitalRead(PIPE_TB1));
       }
     } else {
       hold = millis(); // reset the hold button as hasn't been pressed
@@ -329,7 +347,6 @@ static int8_t setCounter(void) {
   }
 
   pipes.setPipeColour(gMainRGB);
-  interrupts();
 
   return ST_COUNTER;
 }
@@ -367,23 +384,58 @@ void setup() {
   pipes.show();
 }
 
-static int8_t getEvent(void) {
+static int8_t getEvent(tmElements_t *ptm) {
   static unsigned long tb0db = 0;
   unsigned long tb0int = millis();
   static unsigned long tb1db = 0;
   unsigned long tb1int = millis();
   int8_t event = EV_NONE;
 
+  static bool alarmFlag = false;
+  static bool counterFlag = false;
+  static uint8_t counterSeconds = 0;
+
+  // Buttons clear flags and set event
   if (!digitalRead(PIPE_TB0) & (tb0int - tb0db > DEBOUNCE)) {
     event = processTB0();
     tb0db = millis();
+    alarmFlag = false; counterFlag = false;
   } else if (!digitalRead(PIPE_TB1) & (tb1int - tb1db > DEBOUNCE)) {
     event = processTB1();
     tb1db = millis();
+    alarmFlag = false; counterFlag = false;
   }
 
+  // RTC chip not present or failing to operate
+  if (RTC.read(*ptm) != 0) {
+    event = EV_RTCFAIL;
+  }
+
+  // Counter has finished. Set flag for 30s to flash display for this period
   if ((gState == ST_COUNTER) && (pipes.getNumber() == 0)) {
     event = EV_COUNTEND;
+    counterFlag = true;
+    counterSeconds = ptm->Second; // set seconds holder to current seconds for relative 30s timer
+  } else if (counterFlag) {
+    if (ptm->Second % 2 == 0)
+      event = EV_COUNTEND;
+    // we've flashed for 30s, clear the flag
+    if (ptm->Second == ( (counterSeconds < 30) ? (counterSeconds + 30) : (counterSeconds - 29) ) ) {
+      counterFlag = false;
+    }
+  }
+
+  // Alarm has sounded. Set flag for 60s to flash display for this period
+  if (RTC.alarm(ALARM_1) || alarmFlag || RTC.alarm(ALARM_2)) {
+    Serial.println("ALARM!");
+    alarmFlag = true;
+    // flash off every second
+    if (ptm->Second % 2 == 0)
+      event = EV_ALARM;
+    // disable alarm flag after 1 minute
+    if (ptm->Second == 59) {
+      alarmFlag = false;
+    }
   }
 
   return event;
@@ -394,7 +446,7 @@ void loop() {
   static tmElements_t tm; // time struct holder
   static CEveryNSeconds everySecond(1);
 
-  gEvent = getEvent();
+  gEvent = getEvent(&tm);
   for (uint8_t i = 0; i < TRANS_COUNT; i++) {
       if ((gState == trans[i].st) || (ST_ANY == trans[i].st)) {
           if ((gEvent == trans[i].ev) || (EV_ANY == trans[i].ev)) {
@@ -407,32 +459,19 @@ void loop() {
   switch (gState) {
     case ST_CLOCK:
       if (everySecond) {
-        if (RTC.read(tm) == 0) {
-          Serial.print(tm.Hour);
-          Serial.print(":");
-          Serial.println(tm.Minute);
-          pipes.setPipeColour(gMainRGB);
-          // check alarm
-          if (RTC.alarm(ALARM_1) || alarmFlag || RTC.alarm(ALARM_2)) {
-            Serial.println("ALARM!");
-            alarmFlag = true;
-            // flash off every second
-            if (tm.Second % 2 == 0)
-              pipes.setPipeColour(CRGB::Black);
-            // disable alarm flag after 1 minute
-            if (tm.Second == 59)
-              alarmFlag = false;
-          }
-          writeTime(tm);
-        } else {
-          // rtc isn't reading
-          Serial.println("RTC read error!  Please check the circuitry.");
-          Serial.println();
-          pipes.setNumber(0);
-          pipes.writeSolid(CRGB::Red); // all red
-          pipes.show();
-          return;
-        }
+        Serial.print(tm.Hour);
+        Serial.print(":");
+        Serial.println(tm.Minute);
+        pipes.setPipeColour(gMainRGB);
+
+        // flash off every second in alarm event
+        /* if (gEvent == EV_ALARM)*/
+        /*   pipes.setPipeColour(CRGB::Black);*/
+        /* // flash every second whilst counter end*/
+        /* if (gEvent == EV_COUNTEND)*/
+        /*   pipes.setPipeColour(CRGB::Red);*/
+
+        writeTime(tm);
       }
       break;
     case ST_SETTIME:
@@ -454,12 +493,33 @@ void loop() {
         --pipes;
       }
       break;
+    case ST_RTCFAIL:
+      // rtc isn't reading
+      Serial.println("RTC read error!  Please check the circuitry.");
+      Serial.println();
+      pipes.setNumber(0);
+      pipes.writeSolid(CRGB::Red); // all red
+      pipes.show();
+      break;
+    case ST_FLASH:
+      if (everySecond) {
+        if (gEvent == EV_ALARM)
+          pipes.writeSolid(CRGB::Black);
+        else if (gEvent == EV_COUNTEND)
+          pipes.writeSolid(CRGB::Red);
+        pipes.show();
+      }
+      break;
   }
   
   EVERY_N_MILLISECONDS( 100 ) { gHue++; } // slowly cycle the "base color" through the rainbow
 
-  pipes.writeFade(4);
-  /* pipes.writeRainbow(gHue);*/
+  // rainbow at midday and midnight
+  if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) )
+    pipes.writeRainbow(gHue);
+  else
+    pipes.writeFade(4);
+
 
   pipes.show();
 
