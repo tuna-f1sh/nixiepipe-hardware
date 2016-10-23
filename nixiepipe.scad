@@ -1,5 +1,6 @@
 include <shapes.scad>
 include <laser-functions.scad>
+include <scad-utils/morphology.scad>
 $fn=50;
 
 export = true;
@@ -30,10 +31,10 @@ tab = true;
 SCREWDIA = 3 + 0.2;
 STUDDIA = 5;
 
-number=9;
+number=10;
 WIDTH = 40 + (WS_SPACE);
 HEIGHT = WIDTH + 10;
-DEPTH = ((number+2) * MATZ) + (2 * WOODZ);
+DEPTH = ((number+1) * MATZ) + (2 * WOODZ);
 
 ht = HEIGHT + LBD;
 wd = WIDTH + LBD;
@@ -51,10 +52,10 @@ DLZ = (dp / ZSlots);
 if (!export) {
   diffuser(-1);
   translate([0,0,MATZ]) stack(number);
-  translate([0,0,MATZ*(number+2)]) face(1);
+  translate([0,0,MATZ*(number+1)]) face(1);
   translate([0,0,-WOODZ]) face(0);
   /* translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
-  translate([0,0,MATZ*(number+1)]) diffuser(-1);
+  translate([0,0,MATZ*(number)]) diffuser(-1);
   /* translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
   /* translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();*/
@@ -63,8 +64,9 @@ if (!export) {
   echo ("<b>Height:</b>",ht,"<b>Width:</b>",wd,"<b>Depth:</b>",dp);
 } else {
   if (enumbers) {
+    translate([0,0,0]) projection() diffuser(-1);
     for (x = [1:1:number]) {
-      translate([(wd+2)*(x-1),0,0]) projection() diffuser(x);
+      translate([(wd+2)*(x),0,0]) projection() diffuser(x);
     }
   } else if (eblank) {
     projection() diffuser(-1);
@@ -87,7 +89,6 @@ if (!export) {
     }
   }
 }
-/* frame(1);*/
 
 module middle() {
   translate([0,ht/2,0]) hexagon(WS_PIPEH*2,MATZ);
@@ -193,8 +194,8 @@ module face(front) {
         }
       }
       if (front == 0 && node) {
-        /* translate([0,10,0]) node(0);*/
-        /* translate([0,-10,0]) node(0);*/
+        translate([0,10,0]) node(0);
+        translate([0,-10,0]) node(0);
       }
     }
     if (front) {
@@ -212,12 +213,12 @@ module face(front) {
           translate([(wd-10)/2*-1,(PCBZ-LBD)/2*-1,-MATZ]) cylinder(r=0.4,h=MATZ*2);
       }
       if (node) {
-        /* translate([0,10,0]) node(1);*/
-        /* translate([0,-10,0]) node(1);*/
-        translate([0,10,0]) magnet(1);
-        translate([0,-10,0]) magnet(1);
-        translate([0,10,0]) magnet(0);
-        translate([0,-10,0]) magnet(0);
+        translate([0,10,0]) node(1);
+        translate([0,-10,0]) node(1);
+        /* translate([0,10,0]) magnet(1);*/
+        /* translate([0,-10,0]) magnet(1);*/
+        /* translate([0,10,0]) magnet(0);*/
+        /* translate([0,-10,0]) magnet(0);*/
       }
     }
 
@@ -317,8 +318,10 @@ module screw_holes(dia) {
 module node(cut) {
   if (cut) {
     translate([wd/2-2,0,0]) {
-      translate([1,0,0]) cube([2,2-LBD,MATZ],center=true);
-      translate([0,0,-MATZ]) cylinder(r=2-LBD/2,h=MATZ*2);
+      translate([1,0,0]) cube([2,2.1-LBD,MATZ],center=true);
+      translate([0,0,-MATZ]) cylinder(r=2.1-LBD/2,h=MATZ*2);
+      translate([-0.5,0,0]) cube([1,4.2-LBD,MATZ],center=true);
+      translate([-1,0,-MATZ]) cylinder(r=2.1-LBD/2,h=MATZ*2);
     }
   } else {
     translate([-wd/2-2,0,0]) {
