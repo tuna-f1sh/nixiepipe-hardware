@@ -6,13 +6,13 @@ $fn=50;
 export = true;
 enumbers = false;
 eblank = false;
-pcb = false;
+pcb = true;
 
 teeth = false;
 node = true;
 
 LBD=0.23; // general kerf diameter
-MATZ=3.11; // acrylic thickness
+MATZ=3.10; // acrylic thickness
 WOODZ=3.15; // wood thickness
 
 WS2812 = 5;
