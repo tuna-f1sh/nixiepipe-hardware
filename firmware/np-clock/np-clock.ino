@@ -353,7 +353,7 @@ static int8_t setCounter(void) {
 
 void setup() {
   Serial.begin(9600);
-  pipes.passSerial(Serial);
+  /* pipes.passSerial(Serial);*/
 
   pipes.begin<LED_PIN>();
   pipes.clear();
@@ -497,7 +497,7 @@ void loop() {
       // rtc isn't reading
       Serial.println("RTC read error!  Please check the circuitry.");
       Serial.println();
-      pipes.setNumber(0);
+      pipes.setNumber(9999);
       pipes.writeSolid(CRGB::Red); // all red
       pipes.show();
       break;
@@ -515,7 +515,7 @@ void loop() {
   EVERY_N_MILLISECONDS( 100 ) { gHue++; } // slowly cycle the "base color" through the rainbow
 
   // rainbow at midday and midnight
-  if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) )
+  if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) && (gState != ST_RTCFAIL) )
     pipes.writeRainbow(gHue);
   else
     pipes.writeFade(4);
