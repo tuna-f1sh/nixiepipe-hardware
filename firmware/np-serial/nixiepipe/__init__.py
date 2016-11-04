@@ -1,0 +1,1 @@
+from nixiepipe import pipe

@@ -4,6 +4,8 @@ Gerber/
 exports/
 build*
 shapes3d/
+dist/
+*.egg-info
 
 *.bmp
 *.png

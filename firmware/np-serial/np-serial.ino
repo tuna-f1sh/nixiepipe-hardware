@@ -6,6 +6,7 @@
 #define NUM_UNITS             0
 #define BRIGHTNESS            255
 
+#define BAUD                  57600
 #define NP_SET_NUMBER         0x40
 #define NP_SET_PIPE_NUMBER    0x41
 #define NP_SET_COLOUR         0x42
@@ -13,10 +14,10 @@
 #define NP_SET_BRIGHTNESS     0x44
 #define NP_SET_CLEAR          0x45
 #define NP_SET_CLEAR_PIPE     0x46
-#define NP_GET_NUMBER         0x47
 #define NP_SET_CONNECT        0x48
 #define NP_SET_UNITS          0x49
 #define NP_SET_SHOW           0x50
+#define NP_GET_NUMBER         0x51
 
 #define MAX_PACKET            18
 #define MAX_MESSAGE           MAX_PACKET - 2
@@ -65,10 +66,23 @@ static void getColourPacket(byte *pmessage, CRGB *prgb) {
   prgb->b = pmessage[2];
 }
 
+static void packValue(Packet_t *pres, uint32_t value) {
+
+  for (int i = 0; i < 4; ++i) {
+    pres->data.message[i] = (byte) ((value >> (8 * i)) & 0xFF);
+  }
+
+  pres->data.size = 4;
+}
+
 static void processPacket(Packet_t *ppack) {
   CRGB rgb;
   byte pipe = ppack->data.message[0];
   Packet_t res;
+
+  res.data.command = ppack->data.command;
+  res.data.size = 1;
+  res.data.message[0] = 0x00;
 
   switch (ppack->data.command) {
     case (NP_SET_CONNECT):
@@ -78,7 +92,6 @@ static void processPacket(Packet_t *ppack) {
           res.data.size = 2;
           res.data.message[0] = VERSION_MINOR;
           res.data.message[1] = VERSION_MAJOR;
-          Serial.write(res.bytes,res.data.size+2);
           gConnected = true;
         }
       }
@@ -120,8 +133,6 @@ static void processPacket(Packet_t *ppack) {
         pipes.clearPipe(pipe);
       }
       break;
-    case (NP_GET_NUMBER):
-      break;
     case (NP_SET_UNITS):
       if (ppack->data.size >= 1) {
         pipes.setNumberUnits(ppack->data.message[0]);
@@ -132,17 +143,25 @@ static void processPacket(Packet_t *ppack) {
         pipes.write();
         pipes.show();
       }
+      break;
+    case (NP_GET_NUMBER):
+      if (ppack->data.message[0]) {
+        packValue(&res, pipes.getNumber());
+      }
+      break;
     default:
       pipes.writeSolid(CRGB::Red);
       pipes.show();
-      Serial.write(0x3F);
+      res.data.message[0] = 0x3F;
       break;
   }
+
+  Serial.write(res.bytes,res.data.size+2);
 }
 
 void setup()
 {
-  Serial.begin(57600);
+  Serial.begin(BAUD);
   while (!Serial);
 
   pipes.begin();
