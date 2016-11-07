@@ -1,7 +1,9 @@
 import sys
 import time
 import signal
+
 import nixiepipe
+import psutil
 
 # catch ctrl-c to gracefully close
 def sigint_handler(signum, frame):
@@ -16,11 +18,13 @@ if len(sys.argv) > 1:
 else:
     pipe = nixiepipe.pipe()
 
-pipe.setNumberUnits(0)
+pipe.setNumberUnits(1)
 pipe.setColour(255,255,255)
 pipe.setPipeColour(0,255,128,0)
+pipe.setWeather(0,"Percent")
 
-for num in range(0,9999):
-    pipe.setNumber(num)
+while (True):
+    cpu = psutil.cpu_percent(interval=2)
+    pipe.setNumber(cpu)
     pipe.show()
-    time.sleep(0.1)
+    time.sleep(2)

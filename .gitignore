@@ -6,6 +6,7 @@ build*
 shapes3d/
 dist/
 *.egg-info
+media/
 
 *.bmp
 *.png

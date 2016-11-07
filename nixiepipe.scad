@@ -3,7 +3,7 @@ include <laser-functions.scad>
 include <scad-utils/morphology.scad>
 $fn=50;
 
-export = true;
+export = false;
 enumbers = false;
 eblank = false;
 pcb = true;

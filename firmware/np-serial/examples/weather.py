@@ -52,7 +52,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 if len(sys.argv) > 1:
     pipes = nixiepipe.pipe(sys.argv[1])
 else:
-    pipes = nixiepipe.pipe('/dev/tty.usbmodem1421')
+    pipes = nixiepipe.pipe()
 
 # Grab weather on first run and setup timer task to update
 updateweather()

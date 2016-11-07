@@ -187,14 +187,12 @@ class pipe:
         # Set Nixie Pipe array number, auto decimates (value) to pipes.
 
         value = int(round(value)) # can only print ints
-        self._num = value
         self._sendCommand(self._commands["setNumber"],self._valueToMessage(value),4)
         res = self._getResponce(1)
 
     def setPipeNumber(self,pipe,value):
+
         value = int(round(value)) # can only print ints
-        value = int(round(value)) # can only print ints
-        self._pipeNum[pipe] = value
         self._sendCommand(self._commands["setPipeNumber"],[pipe, value],4)
         res = self._getResponce(1)
 
