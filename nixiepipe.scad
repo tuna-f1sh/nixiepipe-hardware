@@ -1,9 +1,18 @@
+/* Copyright JBR Engineering Research Ltd - 2016 - www.jbrengineering.co.uk*/
+
+/* **THIS HEADER MUST BE REDISTRIBUTED WITH CODE***/
+
+/* This work is licensed under the Creative Commons Attribution-NonCommercial 4.0*/
+/* International License. To view a copy of this license, visit*/
+/* http://creativecommons.org/licenses/by-nc/4.0/. Please include this license with*/
+/* any re-distribution.*/
+
 include <shapes.scad>
 include <laser-functions.scad>
 include <scad-utils/morphology.scad>
 $fn=50;
 
-export = false;
+export = true;
 enumbers = false;
 eblank = false;
 pcb = true;
@@ -12,7 +21,7 @@ teeth = false;
 node = true;
 
 LBD=0.23; // general kerf diameter
-MATZ=3.10; // acrylic thickness
+MATZ=3.00; // acrylic thickness
 WOODZ=3.15; // wood thickness
 
 WS2812 = 5;
@@ -154,9 +163,9 @@ module pcb() {
       }
       translate([0,pcbd/2,0]) roundedBox([wd-10,WOODZ*2,PCBZ],0.5);
     }
-    translate([0,pcbd/2-MATZ*3/2,0]) {
-      for (x = [1:1:9]) {
-        translate([0,-MATZ*(x-1),0]) {
+    translate([0,-pcbd/2+MATZ*3/2,0]) {
+      for (x = [1:1:number]) {
+        translate([0,+MATZ*(x-1),0]) {
           if (x % 2) {
             translate([WS_SPACE/2,0,0]) cube([WS2812,WS2812,PCBZ],center=true);
           } else {
