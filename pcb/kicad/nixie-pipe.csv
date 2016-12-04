@@ -1,1 +1,26 @@
-Reference, Quantity, Value, Datasheet, Characteristics, MFN, MFP, Notes, DescriptionC1 C8 C9 ,3,100uF,,X7R,,,,C4 ,1,4.7uF,,X7R,,,,C10 C11 C5 ,3,0.1uF,,X7R,,,,C6 ,1,18pF,,NPO,,,,C2 C3 C7 ,3,47pF,,NPO,,,,CON1 ,1,AVR-ISP-6,,,,,DNF,Pogo contact point - no header requiredD1 ,1,5.6V,http://www.diodes.com/_files/datasheets/ds18004.pdf,,Diodes Inc.,BZT52C5V6,,Overvoltage clampD2 ,1,MBR0520,,,ON Semiconductor,MBR0520,,VUSB protectionIC1 ,1,ATMEGA328P-A,,,Atmel,ATMEGA328P-AU,,L1 ,1,FB,http://search.murata.co.jp/Ceramy/image/img/PDF/ENG/L0132S0193BLM18P.pdf,,Murata,BLM18PG331SH1D,,Ferrite beadP1 ,1,CONN_01X03,,3 pin male right angle header,Stelvio Kontek,4.72972E+12,40 pin strip must be broken to 3 pin,"3 pin male right angle 1"" header - any can be used"P2 ,1,CONN_01X05,,,,,DNF,P3 ,1,CONN_01X03,,,Samtec,SSW-103-02-G-S-RA,"Can be replaced with equivalent 0.1"" right angle single row: http://www.ebay.co.uk/itm/282120149502?_trksid=p2060353.m2749.l2649&ssPageName=STRK%3AMEBIDX%3AIT",3-way female right-angle header for joining modulesP4 ,1,USB_OTG,,,,,,P5 P6 ,2,CONN_01X02,,PCB Component,,,DNF,P7 ,1,CONN_01X02,,,,,DNF,R1 R2 ,2,4k7,,1%,,,,R3 ,1,10k,,1%,,,,R4 ,1,470R,,1%,,,,R5 R6 ,2,10M,,1%,,,,R8 R9 ,2,27R,,1%,,,,U1 U10 U12 U3 U4 U5 U6 U7 U8 U9 ,10,WS2812B,,,Worldsemi,WS2812B,,U11 ,1,DS3231_8,https://datasheets.maximintegrated.com/en/ds/DS3231M.pdf,,Maxim,DS3231MZ+TRL,DNF,U2 ,1,FT230XS,http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_FT230X.pdf,SSOP-16,FTDI,FT230XS,,USB serial converterX1 ,1,CRYSTAL_SMD,,,ABRACON,ABM3-16.000MHZ-B2-T,,
+Reference, Quantity, Value, Footprint, Datasheet, Characteristics, MFN, MFP, Notes, Supplier, Cost, SPN, Description
+C1 C8 C9 ,3,100uF,Capacitors_SMD:C_0603_HandSoldering,,X7R,,,,,,,
+C4 ,1,4.7uF,Capacitors_SMD:C_0603_HandSoldering,,X7R,,,,,,,
+C10 C11 C5 ,3,0.1uF,Capacitors_SMD:C_0603_HandSoldering,,X7R,,,,,,,
+C6 ,1,18pF,Capacitors_SMD:C_0603_HandSoldering,,NPO,,,,,,,
+C2 C3 C7 ,3,47pF,Capacitors_SMD:C_0603_HandSoldering,,NPO,,,,,,,
+CON1 ,1,AVR-ISP-6,Pin_Headers:Pin_Header_Straight_2x03,,,,,DNF,,,,Pogo contact point - no header required
+D1 ,1,5.6V,KiCad/Diodes_SMD.pretty:SOD-123,http://www.diodes.com/_files/datasheets/ds18004.pdf,,Diodes Inc.,BZT52C5V6,,RS,0.022,121-9479,Overvoltage clamp
+D2 ,1,MBR0520,Diodes_SMD:SOD-123,,,ON Semiconductor,MBR0520,,RS,,739-0521,VUSB protection
+IC1 ,1,ATMEGA328P-A,Housings_QFP:TQFP-32_7x7mm_Pitch0.8mm,,,Atmel,ATMEGA328P-AU,,RS,2.07,738-0432,
+L1 ,1,FB,KiCad/Capacitors_SMD.pretty:C_0603_HandSoldering,http://search.murata.co.jp/Ceramy/image/img/PDF/ENG/L0132S0193BLM18P.pdf,,Murata,BLM18PG331SH1D,,,,,Ferrite bead
+P1 ,1,CONN_01X03,Pin_Headers:Pin_Header_Angled_1x03,,3 pin male right angle header,Stelvio Kontek,4729716140410,40 pin strip must be broken to 3 pin,RS,0.57,156-077,3 pin male right angle 1" header - any can be used
+P2 ,1,CONN_01X05,Pin_Headers:Pin_Header_Straight_1x05,,,,,DNF,,,,
+P3 ,1,CONN_01X03,Socket_Strips:Socket_Strip_Angled_1x03,,,Samtec,SSW-103-02-G-S-RA,Can be replaced with equivalent 0.1" right angle single row: http://www.ebay.co.uk/itm/282120149502?_trksid=p2060353.m2749.l2649&ssPageName=STRK%3AMEBIDX%3AIT,RS,0.65,765-5622,3-way female right-angle header for joining modules
+P4 ,1,USB_OTG,Connect:USB_Micro-B_10103594-0001LF,
+P5 P6 ,2,CONN_01X02,WS2812B:Touch_Button,,PCB Component,,,DNF,,,,
+P7 ,1,CONN_01X02,Pin_Headers:Pin_Header_Straight_1x02,,,,,DNF,,,,
+R1 R2 ,2,4k7,Resistors_SMD:R_0603_HandSoldering,,1%,,,,,,,
+R3 ,1,10k,Resistors_SMD:R_0603_HandSoldering,,1%,,,,,,,
+R4 ,1,470R,Resistors_SMD:R_0603_HandSoldering,,1%,,,,,,,
+R5 R6 ,2,10M,Resistors_SMD:R_0603_HandSoldering,,1%,,,,,,,
+R8 R9 ,2,27R,Resistors_SMD:R_0603_HandSoldering,,1%,,,,,,,
+U1 U10 U12 U3 U4 U5 U6 U7 U8 U9 ,10,WS2812B,WS2812B:LED_WS2812B-PLCC4,,,Worldsemi,WS2812B,,,,,
+U11 ,1,DS3231_8,Housings_SOIC:SOIC-8_3.9x4.9mm_Pitch1.27mm,https://datasheets.maximintegrated.com/en/ds/DS3231M.pdf,,Maxim,DS3231MZ+TRL,DNF,Farnell,5.94,2515487,
+U2 ,1,FT230XS,KiCad/Housings_SSOP.pretty:SSOP-16_3.9x4.9mm_Pitch0.635mm,http://www.ftdichip.com/Support/Documents/DataSheets/ICs/DS_FT230X.pdf,SSOP-16,FTDI,FT230XS,,RS,1.35,757-0010,USB serial converter
+X1 ,1,CRYSTAL_SMD,Crystals:Crystal_SMD_5032_2Pads,,,ABRACON,ABM3-16.000MHZ-B2-T,,RS,,2509498425,

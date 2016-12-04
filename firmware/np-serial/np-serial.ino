@@ -14,10 +14,10 @@
 #define NP_SET_BRIGHTNESS     0x44
 #define NP_SET_CLEAR          0x45
 #define NP_SET_CLEAR_PIPE     0x46
+#define NP_GET_NUMBER         0x47
 #define NP_SET_CONNECT        0x48
 #define NP_SET_UNITS          0x49
 #define NP_SET_SHOW           0x50
-#define NP_GET_NUMBER         0x51
 
 #define MAX_PACKET            18
 #define MAX_MESSAGE           MAX_PACKET - 2
@@ -43,12 +43,14 @@ bool gConnected = false;
 
 static Packet_t processInput(void) {
   Packet_t packet;
-  unsigned long timeout = millis();
+  unsigned long timeout;
   byte i = 0;
 
   packet.data.size = Serial.read();
   delay(1);
   packet.data.command = Serial.read();
+
+  timeout = millis();
 
   if (packet.data.size < MAX_MESSAGE) {
     while ( (i < (packet.data.size)) && ( (millis() - timeout) < 10) ) {
