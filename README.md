@@ -18,13 +18,6 @@ Pipe](http://www.nixiepipe.com) modules. Contained with:
 
 ## Supporting the Project
 
-If you do make your own Nixie Pipe and get some satisfaction from it, please
+If you do make your own Nixie Pipe and wish to offer some gratitude, please
 feel free to donate any amount to me using the button at the top of the
 repository.
-
-## License
-
-Hardware is **Creative Commons 4.0 Attribution Non-Commercial** - modifications of
-the design must remain attributed to [JBR Engineering Research
-Ltd](http://www.jbrengineering.co.uk) and if you have wild ideas of making
-millions selling Nixie Pipes you can't - that's for me!!
