@@ -213,7 +213,7 @@ module face(front) {
     // pcb slot
     if (front) {
       translate([0,ht/2+WS_PIPEH+WS_H+1,0]) {
-        cube([wd-10+LBD,PCBZ-LBD,MATZ],center=true);
+        cube([wd-10+LBD,PCBZ-LBD+0.2,MATZ],center=true);
           // holes on edge provide strain relief
           translate([(wd-10)/2,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
           translate([(wd-10)/2*-1,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
@@ -222,7 +222,7 @@ module face(front) {
       }
     } else { // slightly larger for rear acrylic
       translate([0,ht/2+WS_PIPEH+WS_H+1,0]) {
-        cube([wd-10+LBD,PCBZ-LBD+0.15,MATZ],center=true);
+        cube([wd-10+LBD,PCBZ-LBD+0.2,MATZ],center=true);
           // holes on edge provide strain relief
           translate([(wd-10)/2,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
           translate([(wd-10)/2*-1,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
