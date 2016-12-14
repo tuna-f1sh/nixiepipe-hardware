@@ -1,11 +1,6 @@
 /* Copyright JBR Engineering Research Ltd - 2016 - www.jbrengineering.co.uk*/
 
-/* **THIS HEADER MUST BE REDISTRIBUTED WITH CODE***/
-
-/* This work is licensed under the Creative Commons Attribution-NonCommercial 4.0*/
-/* International License. To view a copy of this license, visit*/
-/* http://creativecommons.org/licenses/by-nc/4.0/. Please include this license with*/
-/* any re-distribution.*/
+/* Licensed under GPL 3.0 - a copy of which should have been supplied with this file*/
 
 include <shapes.scad>
 include <laser-functions.scad>
