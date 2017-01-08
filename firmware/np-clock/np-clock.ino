@@ -24,77 +24,143 @@
 
 #include <NixiePipe.h>
 
+#include "state_machine.h"
+#include "serial.h"
+
 #define LED_PIN       6
 #define NUM_PIPES     4
 #define BRIGHTNESS    255
 #define MAIN_RGB      CRGB::White
 #define DEBOUNCE      200
 
-#define ST_ANY        -1
-#define ST_CLOCK      0
-#define ST_SETTIME    1
-#define ST_SETALARM   2
-#define ST_SETCOLOUR  3
-#define ST_SETCOUNT   4
-#define ST_COUNTER    5
-#define ST_CUPDATE    6
-#define ST_RTCFAIL    7
-#define ST_FLASH      8
-#define ST_DIM        9
-#define ST_TERM       10
-
-#define EV_ANY        -1
-#define EV_NONE       0
-#define EV_TB0_PRESS  10
-#define EV_TB1_PRESS  11
-#define EV_TB0_HOLD   12
-#define EV_TB1_HOLD   13
-#define EV_COUNTEND   14
-#define EV_RTCFAIL    15
-#define EV_ALARM      16
-
-typedef struct {
-  int st;
-  int ev;
-  /* int (*fn)(void);*/
-  int nst;
-} tTransition;
-
-tTransition trans[] = {
-  { ST_CLOCK, EV_TB0_PRESS, ST_SETTIME },
-  { ST_CLOCK, EV_TB0_HOLD, ST_SETCOLOUR },
-  { ST_CLOCK, EV_TB1_PRESS, ST_SETCOUNT },
-  { ST_CLOCK, EV_TB1_HOLD, ST_SETALARM },
-  { ST_CLOCK, EV_RTCFAIL, ST_RTCFAIL },
-  { ST_CLOCK, EV_ALARM, ST_FLASH },
-  { ST_CLOCK, EV_COUNTEND, ST_FLASH },
-  { ST_FLASH, EV_NONE, ST_CLOCK },
-  { ST_FLASH, EV_TB0_PRESS, ST_CLOCK },
-  { ST_FLASH, EV_TB0_HOLD, ST_CLOCK },
-  { ST_FLASH, EV_TB1_PRESS, ST_CLOCK },
-  { ST_FLASH, EV_TB1_HOLD, ST_CLOCK },
-  { ST_RTCFAIL, EV_NONE, ST_CLOCK },
-  { ST_SETTIME, EV_ANY, ST_CLOCK },
-  { ST_SETALARM, EV_ANY, ST_CLOCK },
-  { ST_SETCOUNT, EV_ANY, ST_COUNTER },
-  { ST_SETCOLOUR, EV_ANY, ST_CLOCK },
-  { ST_COUNTER, EV_COUNTEND, ST_CLOCK },
-  { ST_COUNTER, EV_TB0_PRESS, ST_CLOCK },
-  { ST_COUNTER, EV_TB0_HOLD, ST_CLOCK },
-  { ST_COUNTER, EV_TB1_PRESS, ST_CUPDATE },
-  { ST_COUNTER, EV_TB1_HOLD, ST_CLOCK },
-  { ST_CUPDATE, EV_ANY, ST_COUNTER },
-};
-
-#define TRANS_COUNT (sizeof(trans)/sizeof(*trans))
-
 CRGB gMainRGB = MAIN_RGB;
 uint8_t gHue = 0;
 
 int8_t gState = ST_CLOCK;
 int8_t gEvent = EV_NONE;
+bool gConnected = false;
 
 NixiePipe pipes = NixiePipe(NUM_PIPES);
+
+static Packet_t processInput(void) {
+  Packet_t packet;
+  unsigned long timeout;
+  byte i = 0;
+
+  packet.data.size = Serial.read();
+  delay(1);
+  packet.data.command = Serial.read();
+
+  timeout = millis();
+
+  if (packet.data.size < MAX_MESSAGE) {
+    while ( (i < (packet.data.size)) && ( (millis() - timeout) < 10) ) {
+      packet.data.message[i++] = Serial.read();
+      timeout = millis();
+    }
+  }
+
+  return packet;
+}
+
+static void getColourPacket(byte *pmessage, CRGB *prgb) {
+  prgb->r = pmessage[0];
+  prgb->g = pmessage[1];
+  prgb->b = pmessage[2];
+}
+
+static void packValue(Packet_t *pres, uint32_t value) {
+
+  for (int i = 0; i < 4; ++i) {
+    pres->data.message[i] = (byte) ((value >> (8 * i)) & 0xFF);
+  }
+
+  pres->data.size = 4;
+}
+
+static void processPacket(Packet_t *ppack) {
+  CRGB rgb;
+  byte pipe = ppack->data.message[0];
+  Packet_t res;
+
+  res.data.command = ppack->data.command;
+  res.data.size = 1;
+  res.data.message[0] = 0x00;
+
+  switch (ppack->data.command) {
+    case (NP_SET_CONNECT):
+      if (ppack->data.size >= 2) {
+        if ((ppack->data.message[0] == 0x4E /*N*/) && (ppack->data.message[1] == 0x50 /*P*/)) {
+          res.data.command = ppack->data.command;
+          res.data.size = 2;
+          res.data.message[0] = VERSION_MINOR;
+          res.data.message[1] = VERSION_MAJOR;
+          gConnected = true;
+        }
+      }
+      break;
+    case (NP_SET_NUMBER):
+      if (ppack->data.size >= 4) {
+        pipes.setNumber((long) SERIAL_UINT32(ppack->data.message[0],ppack->data.message[1],ppack->data.message[2],ppack->data.message[3]));
+      }
+      break;
+    case (NP_SET_PIPE_NUMBER):
+      if (ppack->data.size >= 2) {
+        pipes.setPipeNumber(pipe,ppack->data.message[1]);
+      }
+      break;
+    case (NP_SET_COLOUR):
+      if (ppack->data.size >= 3) {
+        getColourPacket(&ppack->data.message[0],&rgb);
+        pipes.setPipeColour(rgb);
+      }
+      break;
+    case (NP_SET_PIPE_COLOUR):
+      if (ppack->data.size >= 4) {
+        getColourPacket(&ppack->data.message[1],&rgb);
+        pipes.setPipeColour(pipe,rgb);
+      }
+      break;
+    case (NP_SET_BRIGHTNESS):
+      if (ppack->data.size >= 1) {
+        pipes.setBrightness(ppack->data.message[0]);
+      }
+      break;
+    case (NP_SET_CLEAR):
+      if (ppack->data.message[0]) {
+        pipes.clear();
+      }
+      break;
+    case (NP_SET_CLEAR_PIPE):
+      if (ppack->data.size >= 1) {
+        pipes.clearPipe(pipe);
+      }
+      break;
+    case (NP_SET_UNITS):
+      if (ppack->data.size >= 1) {
+        pipes.setNumberUnits(ppack->data.message[0]);
+      }
+      break;
+    case (NP_SET_SHOW):
+      if (ppack->data.message[0]) {
+        pipes.write();
+        pipes.show();
+      }
+      break;
+    case (NP_GET_NUMBER):
+      if (ppack->data.message[0]) {
+        packValue(&res, pipes.getNumber());
+      }
+      break;
+    default:
+      /* pipes.writeSolid(CRGB::Red);*/
+      /* pipes.show();*/
+      /* res.data.message[0] = 0x3F;*/
+      break;
+  }
+
+  Serial.write(res.bytes,res.data.size+2);
+}
 
 static int8_t processTB0(void) {
   uint32_t hold = millis();
@@ -321,16 +387,18 @@ static int8_t setCounter(void) {
   uint32_t hold = millis(); // hold timer to increase time change
   uint32_t debounce = 0; // debouce holder
   uint16_t dperiod = DEBOUNCE; // debouce period
+  Packet_t packet;
 
   // blank the counter if it isn't running
   if (gState != ST_CUPDATE)
     pipes.setNumber(1);
 
-  // run for 30s then escape
-  while (millis() - entry < 30000) {
+  // Set pipes red to show setting clock
+  pipes.writeSolid(CRGB::Green);
+  pipes.show();
 
-    // Set pipes red to show setting clock
-    pipes.writeSolid(CRGB::Green);
+  // run for 30s then escape
+  while ( (millis() - entry) < 30000) {
     
     if (!digitalRead(PIPE_TB0)) {
       if (millis() - hold > 1000) {
@@ -353,9 +421,15 @@ static int8_t setCounter(void) {
         }
         debounce = entry;
       }
+
+    // show the changes
+    pipes.write();
+    pipes.show();
+
     } else if (!digitalRead(PIPE_TB1)) {
       if ((millis() - entry) > 1000 ) {
-        entry = millis() + 6000;
+        // escape while statement
+        entry = millis() + 30001;
         // hold until exit to prevent re-trigger
         while(!digitalRead(PIPE_TB1));
       }
@@ -363,16 +437,22 @@ static int8_t setCounter(void) {
       hold = millis(); // reset the hold button as hasn't been pressed
     }
 
-    pipes.show();
+    // check for serial request in this mode too
+    if (Serial.available()) {
+      packet = processInput();
+      processPacket(&packet);
+    }
+
   }
 
   pipes.setPipeColour(gMainRGB);
+  pipes.show();
 
   return ST_COUNTER;
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(BAUD);
   /* pipes.passSerial(Serial);*/
 
   pipes.begin<LED_PIN>();
@@ -466,81 +546,91 @@ void loop() {
   static tmElements_t tm; // time struct holder
   static CEveryNSeconds everySecond(1);
 
-  gEvent = getEvent(&tm);
-  for (uint8_t i = 0; i < TRANS_COUNT; i++) {
-      if ((gState == trans[i].st) || (ST_ANY == trans[i].st)) {
-          if ((gEvent == trans[i].ev) || (EV_ANY == trans[i].ev)) {
-              gState = trans[i].nst;
-              break;
-          }
-      }
-  }
+  // Clock mode unless in serial mode
+  if (!gConnected) {
+    gEvent = getEvent(&tm);
+    for (uint8_t i = 0; i < TRANS_COUNT; i++) {
+        if ((gState == trans[i].st) || (ST_ANY == trans[i].st)) {
+            if ((gEvent == trans[i].ev) || (EV_ANY == trans[i].ev)) {
+                gState = trans[i].nst;
+                break;
+            }
+        }
+    }
 
-  switch (gState) {
-    case ST_CLOCK:
-      if (everySecond) {
-        Serial.print(tm.Hour);
-        Serial.print(":");
-        Serial.println(tm.Minute);
-        pipes.setPipeColour(gMainRGB);
+    switch (gState) {
+      case ST_CLOCK:
+        if (everySecond) {
+          Serial.print(tm.Hour);
+          Serial.print(":");
+          Serial.println(tm.Minute);
+          pipes.setPipeColour(gMainRGB);
 
-        // flash off every second in alarm event
-        /* if (gEvent == EV_ALARM)*/
-        /*   pipes.setPipeColour(CRGB::Black);*/
-        /* // flash every second whilst counter end*/
-        /* if (gEvent == EV_COUNTEND)*/
-        /*   pipes.setPipeColour(CRGB::Red);*/
+          // flash off every second in alarm event
+          /* if (gEvent == EV_ALARM)*/
+          /*   pipes.setPipeColour(CRGB::Black);*/
+          /* // flash every second whilst counter end*/
+          /* if (gEvent == EV_COUNTEND)*/
+          /*   pipes.setPipeColour(CRGB::Red);*/
 
-        writeTime(tm);
-      }
-      break;
-    case ST_SETTIME:
-      setTime(tm);
-      break;
-    case ST_SETCOLOUR:
-      setColour();
-      break;
-    case ST_SETALARM:
-      setAlarm(tm);
-      break;
-    case (ST_SETCOUNT): case (ST_CUPDATE):
-      setCounter();
-      break;
-    case ST_COUNTER:
-      if (everySecond) {
-        if (pipes.getNumber() <= 10)
-          pipes.setPipeColour(CRGB::Red);
-        --pipes;
-      }
-      break;
-    case ST_RTCFAIL:
-      // rtc isn't reading
-      Serial.println("RTC read error!  Please check the circuitry.");
-      Serial.println();
-      pipes.setNumber(9999);
-      pipes.writeSolid(CRGB::Red); // all red
-      pipes.show();
-      break;
-    case ST_FLASH:
-      if (everySecond) {
-        if (gEvent == EV_ALARM)
-          pipes.writeSolid(CRGB::Black);
-        else if (gEvent == EV_COUNTEND)
-          pipes.writeSolid(CRGB::Red);
+          writeTime(tm);
+        }
+        break;
+      case ST_SETTIME:
+        setTime(tm);
+        break;
+      case ST_SETCOLOUR:
+        setColour();
+        break;
+      case ST_SETALARM:
+        setAlarm(tm);
+        break;
+      case (ST_SETCOUNT): case (ST_CUPDATE):
+        setCounter();
+        break;
+      case ST_COUNTER:
+        if (everySecond) {
+          if (pipes.getNumber() <= 10)
+            pipes.setPipeColour(CRGB::Red);
+          --pipes;
+        }
+        break;
+      case ST_RTCFAIL:
+        // rtc isn't reading
+        Serial.println("RTC read error!  Please check the circuitry.");
+        Serial.println();
+        pipes.setNumber(9999);
+        pipes.writeSolid(CRGB::Red); // all red
         pipes.show();
-      }
-      break;
-  }
-  
-  EVERY_N_MILLISECONDS( 100 ) { gHue++; } // slowly cycle the "base color" through the rainbow
+        break;
+      case ST_FLASH:
+        if (everySecond) {
+          if (gEvent == EV_ALARM)
+            pipes.writeSolid(CRGB::Black);
+          else if (gEvent == EV_COUNTEND)
+            pipes.writeSolid(CRGB::Red);
+          pipes.show();
+        }
+        break;
+    }
+    
+    EVERY_N_MILLISECONDS( 100 ) { gHue++; } // slowly cycle the "base color" through the rainbow
 
-  // rainbow at midday and midnight
-  if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) && (gState != ST_RTCFAIL) )
-    pipes.writeRainbow(gHue);
-  else
     pipes.writeFade(4);
 
+    // rainbow at midday and midnight
+    if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) && (gState != ST_RTCFAIL) )
+      pipes.writeRainbow(gHue);
 
-  pipes.show();
+    pipes.show();
+
+  // in serial mode, just act on packets
+  } else {
+    Packet_t packet;
+    if (Serial.available()) {
+      packet = processInput();
+      processPacket(&packet);
+    }
+  }
 
 }
