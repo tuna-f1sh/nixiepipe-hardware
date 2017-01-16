@@ -193,13 +193,25 @@ static int8_t processTB1(void) {
 }
 
 static inline void writeTime(tmElements_t tm) {
-  if (NUM_PIPES <= 5)
-    pipes.setNumber((tm.Hour * 100) + tm.Minute);
-  else
-    pipes.setNumber((tm.Hour * 10000) + (tm.Minute * 100) + tm.Second);
+  uint32_t time_val;
+
+  if (NUM_PIPES <= 5) {
+    time_val = tm.Hour;
+    time_val *= 10000;
+    time_val += tm.Minute * 100;
+    time_val += tm.Second;
+  } else {
+    time_val = tm.Hour * 100;
+    time_val += tm.Minute;
+  }
+
+  pipes.setNumber(time_val);
 }
 
 static void changeTime(tmElements_t *ptm, int8_t dir) {
+  // set seconds to zero as we're not able to move them with buttons
+  ptm->Second = 0;
+
   for (int i = 0; i < abs(dir); ++i) {
     // UP
     if (dir >= 0) {
