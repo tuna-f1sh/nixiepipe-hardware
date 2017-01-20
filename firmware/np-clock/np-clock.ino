@@ -30,8 +30,10 @@
 #define LED_PIN       6
 #define NUM_PIPES     4
 #define BRIGHTNESS    255
-#define MAIN_RGB      CRGB::White
+#define MAIN_RGB      CRGB::OrangeRed
 #define DEBOUNCE      200
+
+#define RAINBOW       true
 
 CRGB gMainRGB = MAIN_RGB;
 uint8_t gHue = 0;
@@ -195,11 +197,13 @@ static int8_t processTB1(void) {
 static inline void writeTime(tmElements_t tm) {
   uint32_t time_val;
 
-  if (NUM_PIPES <= 5) {
+  // show seconds with more than 6 pipes
+  if (NUM_PIPES > 5) {
     time_val = tm.Hour;
     time_val *= 10000;
     time_val += tm.Minute * 100;
     time_val += tm.Second;
+  // otherwise just hours and minutes
   } else {
     time_val = tm.Hour * 100;
     time_val += tm.Minute;
@@ -449,10 +453,11 @@ static int8_t setCounter(void) {
       hold = millis(); // reset the hold button as hasn't been pressed
     }
 
-    // check for serial request in this mode too
+    // check for serial request in this mode too and exit if we get connect packet
     if (Serial.available()) {
       packet = processInput();
       processPacket(&packet);
+      return ST_CLOCK;
     }
 
   }
@@ -632,6 +637,8 @@ void loop() {
 
     // rainbow at midday and midnight
     if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) && (gState != ST_RTCFAIL) )
+      pipes.writeRainbow(gHue);
+    else if (RAINBOW && (gState == ST_CLOCK) )
       pipes.writeRainbow(gHue);
 
     pipes.show();
