@@ -33,7 +33,7 @@
 #define MAIN_RGB      CRGB::OrangeRed
 #define DEBOUNCE      200
 
-#define RAINBOW       true
+#define RAINBOW       false
 
 CRGB gMainRGB = MAIN_RGB;
 uint8_t gHue = 0;
