@@ -635,11 +635,14 @@ void loop() {
 
     pipes.writeFade(4);
 
-    // rainbow at midday and midnight
-    if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) && (gState != ST_RTCFAIL) )
-      pipes.writeRainbow(gHue);
-    else if (RAINBOW && (gState == ST_CLOCK) )
-      pipes.writeRainbow(gHue);
+    // rainbow at midday and midnight in clock state
+    if (gState == ST_CLOCK) {
+      if ( ((tm.Hour == 0) || (tm.Hour == 12)) && (tm.Minute == 0) )
+        pipes.writeRainbow(gHue);
+      // always display rainbow if rainbow flag
+      else if (RAINBOW)
+        pipes.writeRainbow(gHue);
+    }
 
     pipes.show();
 
