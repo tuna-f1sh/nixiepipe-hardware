@@ -15,7 +15,7 @@
 #define MAX_MESSAGE           MAX_PACKET - 2
 
 #define VERSION_MINOR         1
-#define VERSION_MAJOR         0
+#define VERSION_MAJOR         1
 
 #define SERIAL_UINT16(LSB,MSB) (( (short) LSB & 0xFF) | (( (short) MSB & 0xFF) << 8))
 #define SERIAL_UINT32(B0,B1,B2,B3) ( (long) B0 | ( (long) B1 << 8 ) | ( (long) B2 << 16 ) | ( (long) B3 << 24 ) )
