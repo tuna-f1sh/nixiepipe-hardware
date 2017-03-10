@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:nixie-pipe-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -28,9 +29,8 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
-LIBS:tapMatrix
-LIBS:ws2812
 LIBS:ftdi
+LIBS:jbr-ics
 LIBS:nixie-pipe-cache
 EELAYER 25 0
 EELAYER END
@@ -160,6 +160,8 @@ F 1 "0.1uF" H 10275 3200 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0603_HandSoldering" H 10288 3150 50  0001 C CNN
 F 3 "" H 10250 3300 50  0000 C CNN
 F 4 "X7R" H 10250 3300 60  0001 C CNN "Characteristics"
+F 5 "DNF" H 10250 3300 60  0001 C CNN "Notes"
+F 6 "Fit if require prgramming via USB serial but breaks serial comms in clock firmware" H 10250 3300 60  0001 C CNN "Description"
 	1    10250 3300
 	1    0    0    -1  
 $EndComp
@@ -755,7 +757,7 @@ TXD
 Text GLabel 4150 3750 0    60   Input ~ 0
 RXD
 $Comp
-L USB_OTG P4
+L USB_OTG-RESCUE-nixie-pipe P4
 U 1 1 57E3E220
 P 7250 5400
 F 0 "P4" H 7575 5275 50  0000 C CNN
