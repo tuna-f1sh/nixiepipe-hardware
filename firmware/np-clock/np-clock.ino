@@ -469,6 +469,9 @@ static int8_t setCounter(void) {
 }
 
 void setup() {
+  Packet_t packet;
+  uint16_t entry = millis();
+
   Serial.begin(BAUD);
   /* pipes.passSerial(Serial);*/
 
@@ -476,29 +479,41 @@ void setup() {
   pipes.clear();
   pipes.setBrightness(BRIGHTNESS);
   pipes.setPipeColour(gMainRGB);
+  pipes.writeNumber( (VERSION_MAJOR * 100) + VERSION_MINOR);
   pipes.show();
-
-  for (int i = 0; i < 10; i++) {
-    pipes.shift(1);
-    pipes.setPipeNumber(0,i);
-    pipes.write();
-    pipes.show();
-    delay(100);
-  }
-  for (int i = 9; i > 0; i--) {
-    pipes.shift(1);
-    pipes.setPipeNumber(0,i);
-    pipes.write();
-    pipes.show();
-    delay(100);
-  }
 
   pinMode(PIPE_TB0,INPUT); // TB0
   pinMode(PIPE_TB1,INPUT); // TB1
 
-  pipes.writeNumber(0);
-  pipes.clear();
-  pipes.show();
+  // brief wait at boot for connection attempt as RTS resets on port open
+  // show firmware version whilst we are at it
+  while ( (millis() - entry) < 1500) {
+    if (Serial.available()) {
+      packet = processInput();
+      processPacket(&packet);
+    }
+  }
+
+  if (!gConnected) {
+    for (int i = 0; i < 10; i++) {
+      pipes.shift(1);
+      pipes.setPipeNumber(0,i);
+      pipes.write();
+      pipes.show();
+      delay(100);
+    }
+    for (int i = 9; i > 0; i--) {
+      pipes.shift(1);
+      pipes.setPipeNumber(0,i);
+      pipes.write();
+      pipes.show();
+      delay(100);
+    }
+
+    pipes.writeNumber(0);
+    pipes.clear();
+    pipes.show();
+  }
 }
 
 static int8_t getEvent(tmElements_t *ptm) {
