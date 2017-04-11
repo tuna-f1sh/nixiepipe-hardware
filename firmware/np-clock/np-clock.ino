@@ -487,7 +487,7 @@ void setup() {
 
   // brief wait at boot for connection attempt as RTS resets on port open
   // show firmware version whilst we are at it
-  while ( (millis() - entry) < 1500) {
+  while ( (millis() - entry) < 2500) {
     if (Serial.available()) {
       packet = processInput();
       processPacket(&packet);
