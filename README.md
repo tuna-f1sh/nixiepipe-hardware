@@ -16,8 +16,13 @@ Pipe](http://www.nixiepipe.com) modules. Contained with:
 * [Python Package](https://github.com/tuna-f1sh/py-nixiepipe)
 * [Electron GUI app](https://github.com/tuna-f1sh/electron-nixiepipe)
 
-## Supporting the Project
+## Supporting the Project and Attribution
 
 If you do make your own Nixie Pipe and wish to offer some gratitude, please
 feel free to donate any amount to me using the button at the top of the
 repository.
+
+I make many of my projects Open Source so others can learn as I have, but please remember
+to follow the license terms and attribute any derivations or code reuse.
+Please link back to the project, [www.nixiepipe.com](www.nixiepipe.com) and
+[www.jbrengineering.co.uk](www.jbrengineering.co.uk).
