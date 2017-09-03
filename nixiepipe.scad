@@ -1,13 +1,19 @@
-/* Copyright JBR Engineering Research Ltd - 2016 - www.jbrengineering.co.uk*/
-
-/* Licensed under GPL 3.0 - a copy of which should have been supplied with this file*/
+/*
+ *Copyright JBR Engineering Research Ltd - 2016 - www.jbrengineering.co.uk
+ *
+ *This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+ *International License. To view a copy of this license, visit
+ *http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+ *Commons, PO Box 1866, Mountain View, CA 94042, USA. Please include this
+ *header with modifaction
+ */
 
 include <shapes.scad>
 include <laser-functions.scad>
 include <scad-utils/morphology.scad>
 $fn=50;
 
-export = true;
+export = false;
 enumbers = false;
 eblank = false;
 pcb = true;

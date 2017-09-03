@@ -160,8 +160,6 @@ F 1 "0.1uF" H 10275 3200 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0603_HandSoldering" H 10288 3150 50  0001 C CNN
 F 3 "" H 10250 3300 50  0000 C CNN
 F 4 "X7R" H 10250 3300 60  0001 C CNN "Characteristics"
-F 5 "DNF" H 10250 3300 60  0001 C CNN "Notes"
-F 6 "Fit if require prgramming via USB serial but breaks serial comms in clock firmware" H 10250 3300 60  0001 C CNN "Description"
 	1    10250 3300
 	1    0    0    -1  
 $EndComp
@@ -1342,16 +1340,15 @@ L ZENERsmall D3
 U 1 1 586A1E15
 P 5650 1250
 F 0 "D3" H 5650 1350 50  0000 C CNN
-F 1 "3.6V" H 5650 1150 50  0000 C CNN
+F 1 "3.9V" H 5650 1150 50  0000 C CNN
 F 2 "KiCad/Diodes_SMD.pretty:SOD-123" H 5650 1250 50  0001 C CNN
 F 3 "http://www.diodes.com/_files/datasheets/ds18004.pdf" H 5650 1250 50  0001 C CNN
-F 4 "Diodes Inc." H 5650 1250 60  0001 C CNN "MFN"
-F 5 "BZT52C5V6" H 5650 1050 60  0001 C CNN "MFP"
+F 4 "ON Semiconductor" H 5650 1250 60  0001 C CNN "MFN"
+F 5 "MMSZ5228BT1G" H 5650 1050 60  0001 C CNN "MFP"
 F 6 "RS" H 5650 1250 60  0001 C CNN "Supplier"
-F 7 "DNF" H 5650 1250 60  0001 C CNN "Notes"
-F 8 "0.022" H 5650 1250 60  0001 C CNN "Cost"
-F 9 "121-9479" H 5650 1250 60  0001 C CNN "SPN"
-F 10 "3V clamp to bring to VH threshold" H 5650 1250 60  0001 C CNN "Description"
+F 7 "0.022" H 5650 1250 60  0001 C CNN "Cost"
+F 8 "121-9479" H 5650 1250 60  0001 C CNN "SPN"
+F 9 "3.9V clamp to bring to VH threshold" H 5650 1250 60  0001 C CNN "Description"
 	1    5650 1250
 	-1   0    0    1   
 $EndComp
