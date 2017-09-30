@@ -1,8 +1,8 @@
 (export (version D)
   (design
     (source /Users/John/Projects/JBR-Engineering/nixie-pipe/pcb/kicad/nixie-pipe.sch)
-    (date "Wednesday, 11 January 2017 'amt' 08:44:57")
-    (tool "Eeschema 4.0.2-stable")
+    (date "Saturday, 30 September 2017 'amt' 08:49:24")
+    (tool "Eeschema 4.0.5")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
         (title "Nixie Pipe")
@@ -40,7 +40,7 @@
       (sheetpath (names /) (tstamps /))
       (tstamp 579DF109))
     (comp (ref C5)
-      (value 0.1uF)
+      (value 100nF)
       (footprint Capacitors_SMD:C_0603_HandSoldering)
       (fields
         (field (name Characteristics) X7R))
@@ -53,11 +53,11 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579DF750))
     (comp (ref C1)
-      (value 100uF)
+      (value 100nF)
       (footprint Capacitors_SMD:C_0603_HandSoldering)
       (fields
         (field (name Characteristics) X7R))
@@ -70,7 +70,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E0F69))
     (comp (ref U4)
@@ -79,7 +79,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E1B7B))
     (comp (ref U5)
@@ -88,7 +88,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E1B81))
     (comp (ref U6)
@@ -97,7 +97,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E1D24))
     (comp (ref U7)
@@ -106,7 +106,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E1D2A))
     (comp (ref U8)
@@ -115,7 +115,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E206C))
     (comp (ref U9)
@@ -124,7 +124,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E2072))
     (comp (ref U10)
@@ -133,7 +133,7 @@
       (fields
         (field (name MFN) Worldsemi)
         (field (name MFP) WS2812B))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 579E2078))
     (comp (ref P2)
@@ -261,11 +261,11 @@
         (field (name Supplier) Farnell)
         (field (name Cost) 5.94)
         (field (name SPN) 2515487))
-      (libsource (lib ws2812) (part DS3231_8))
+      (libsource (lib jbr-ics) (part DS3231_8))
       (sheetpath (names /) (tstamps /))
       (tstamp 57A60FD1))
     (comp (ref C9)
-      (value 100uF)
+      (value 100nF)
       (footprint Capacitors_SMD:C_0603_HandSoldering)
       (fields
         (field (name Characteristics) X7R))
@@ -273,7 +273,7 @@
       (sheetpath (names /) (tstamps /))
       (tstamp 57A6237D))
     (comp (ref C8)
-      (value 100uF)
+      (value 100nF)
       (footprint Capacitors_SMD:C_0603_HandSoldering)
       (fields
         (field (name Characteristics) X7R))
@@ -289,7 +289,7 @@
         (field (name MFP) WS2812B)
         (field (name Notes) "This lib just has a nice model")
         (field (name Cost) 0.35))
-      (libsource (lib ws2812) (part WS2812B))
+      (libsource (lib nixie-pipe-cache) (part WS2812B))
       (sheetpath (names /) (tstamps /))
       (tstamp 57C2A486))
     (comp (ref P7)
@@ -315,7 +315,7 @@
     (comp (ref P4)
       (value USB_OTG)
       (footprint Connect:USB_Micro-B_10103594-0001LF)
-      (libsource (lib conn) (part USB_OTG))
+      (libsource (lib nixie-pipe-rescue) (part USB_OTG-RESCUE-nixie-pipe))
       (sheetpath (names /) (tstamps /))
       (tstamp 57E3E220))
     (comp (ref D2)
@@ -347,7 +347,7 @@
       (sheetpath (names /) (tstamps /))
       (tstamp 57EDA809))
     (comp (ref C11)
-      (value 0.1uF)
+      (value 100nF)
       (footprint Capacitors_SMD:C_0603_HandSoldering)
       (fields
         (field (name Characteristics) X7R))
@@ -362,7 +362,7 @@
         (field (name MFN) Murata)
         (field (name MFP) BLM18PG331SH1D)
         (field (name Description) "Ferrite bead"))
-      (libsource (lib device) (part INDUCTOR_SMALL))
+      (libsource (lib nixie-pipe-cache) (part INDUCTOR_SMALL))
       (sheetpath (names /) (tstamps /))
       (tstamp 580745B7))
     (comp (ref C4)
@@ -390,7 +390,7 @@
       (sheetpath (names /) (tstamps /))
       (tstamp 580761FD))
     (comp (ref C10)
-      (value 0.1uF)
+      (value 100nF)
       (footprint Capacitors_SMD:C_0603_HandSoldering)
       (fields
         (field (name Characteristics) X7R))
@@ -413,18 +413,17 @@
       (sheetpath (names /) (tstamps /))
       (tstamp 580A5E84))
     (comp (ref D3)
-      (value 3.6V)
+      (value 3.9V)
       (footprint KiCad/Diodes_SMD.pretty:SOD-123)
       (datasheet http://www.diodes.com/_files/datasheets/ds18004.pdf)
       (fields
-        (field (name MFN) "Diodes Inc.")
-        (field (name MFP) BZT52C5V6)
+        (field (name MFN) "ON Semiconductor")
+        (field (name MFP) MMSZ5228BT1G)
         (field (name Supplier) RS)
-        (field (name Notes) DNF)
         (field (name Cost) 0.022)
         (field (name SPN) 121-9479)
-        (field (name Description) "3V clamp to bring to VH threshold"))
-      (libsource (lib device) (part ZENERsmall))
+        (field (name Description) "3.9V clamp to bring to VH threshold"))
+      (libsource (lib nixie-pipe-cache) (part ZENERsmall))
       (sheetpath (names /) (tstamps /))
       (tstamp 586A1E15))
     (comp (ref R7)
@@ -512,7 +511,7 @@
         (pin (num 1) (name ~) (type passive))
         (pin (num 2) (name ~) (type passive))))
     (libpart (lib conn) (part CONN_01X02)
-      (description "Connector 01x02")
+      (description "Connector, single row, 01x02")
       (footprints
         (fp Pin_Header_Straight_1X02)
         (fp Pin_Header_Angled_1X02)
@@ -525,7 +524,7 @@
         (pin (num 1) (name P1) (type passive))
         (pin (num 2) (name P2) (type passive))))
     (libpart (lib conn) (part CONN_01X03)
-      (description "Connector 01x03")
+      (description "Connector, single row, 01x03")
       (footprints
         (fp Pin_Header_Straight_1X03)
         (fp Pin_Header_Angled_1X03)
@@ -539,7 +538,7 @@
         (pin (num 2) (name P2) (type passive))
         (pin (num 3) (name P3) (type passive))))
     (libpart (lib conn) (part CONN_01X05)
-      (description "Connector 01x05")
+      (description "Connector, single row, 01x05")
       (footprints
         (fp Pin_Header_Straight_1X05)
         (fp Pin_Header_Angled_1X05)
@@ -558,10 +557,11 @@
       (description "Polarised capacitor")
       (footprints
         (fp SMD*_Pol)
+        (fp C_Axial*)
+        (fp C_Radial*)
         (fp c_elec*)
         (fp C*elec)
         (fp TantalC*)
-        (fp Elko*)
         (fp CP*))
       (fields
         (field (name Reference) C)
@@ -570,16 +570,16 @@
         (pin (num 1) (name ~) (type passive))
         (pin (num 2) (name ~) (type passive))))
     (libpart (lib device) (part Crystal_Small)
-      (description "Two pin crystal")
+      (description "Two pin crystal, small symbol")
       (footprints
-        (fp Crystal_))
+        (fp Crystal*))
       (fields
         (field (name Reference) Y)
         (field (name Value) Crystal_Small))
       (pins
         (pin (num 1) (name 1) (type passive))
         (pin (num 2) (name 2) (type passive))))
-    (libpart (lib ws2812) (part DS3231_8)
+    (libpart (lib jbr-ics) (part DS3231_8)
       (footprints
         (fp W16#H2))
       (fields
@@ -595,13 +595,14 @@
         (pin (num 7) (name SDA) (type BiDi))
         (pin (num 8) (name SCL) (type BiDi))))
     (libpart (lib device) (part D_Schottky)
-      (description "Diode schottky")
+      (description "Schottky diode")
       (footprints
-        (fp D-Pak_TO252AA)
         (fp Diode_*)
+        (fp D-*)
         (fp *SingleDiode)
+        (fp *_Diode_*)
         (fp *SingleDiode*)
-        (fp *_Diode_*))
+        (fp D_*))
       (fields
         (field (name Reference) D)
         (field (name Value) D_Schottky))
@@ -634,7 +635,7 @@
         (pin (num 14) (name CBUS1) (type BiDi))
         (pin (num 15) (name CBUS0) (type BiDi))
         (pin (num 16) (name CBUS3) (type BiDi))))
-    (libpart (lib device) (part INDUCTOR_SMALL)
+    (libpart (lib nixie-pipe-cache) (part INDUCTOR_SMALL)
       (fields
         (field (name Reference) L)
         (field (name Value) INDUCTOR_SMALL))
@@ -652,13 +653,12 @@
       (pins
         (pin (num 1) (name ~) (type passive))
         (pin (num 2) (name ~) (type passive))))
-    (libpart (lib conn) (part USB_OTG)
-      (description "micro/mini connector")
+    (libpart (lib nixie-pipe-rescue) (part USB_OTG-RESCUE-nixie-pipe)
       (footprints
         (fp USB*))
       (fields
         (field (name Reference) P)
-        (field (name Value) USB_OTG))
+        (field (name Value) USB_OTG-RESCUE-nixie-pipe))
       (pins
         (pin (num 1) (name VCC) (type power_out))
         (pin (num 2) (name D-) (type passive))
@@ -666,7 +666,7 @@
         (pin (num 4) (name ID) (type power_in))
         (pin (num 5) (name GND) (type power_in))
         (pin (num 6) (name shield) (type passive))))
-    (libpart (lib ws2812) (part WS2812B)
+    (libpart (lib nixie-pipe-cache) (part WS2812B)
       (fields
         (field (name Reference) U)
         (field (name Value) WS2812B))
@@ -675,7 +675,7 @@
         (pin (num 2) (name DOUT) (type output))
         (pin (num 3) (name GND) (type power_in))
         (pin (num 4) (name DIN) (type input))))
-    (libpart (lib device) (part ZENERsmall)
+    (libpart (lib nixie-pipe-cache) (part ZENERsmall)
       (footprints
         (fp D?)
         (fp SO*)
@@ -687,16 +687,20 @@
         (pin (num 1) (name K) (type passive))
         (pin (num 2) (name A) (type passive)))))
   (libraries
-    (library (logical device)
-      (uri "/Library/Application Support/kicad/library/device.lib"))
     (library (logical conn)
       (uri "/Library/Application Support/kicad/library/conn.lib"))
-    (library (logical atmel)
-      (uri "/Library/Application Support/kicad/library/atmel.lib"))
-    (library (logical ws2812)
-      (uri "/Library/Application Support/kicad/library/ws2812.lib"))
     (library (logical ftdi)
-      (uri "/Library/Application Support/kicad/library/ftdi.lib")))
+      (uri "/Library/Application Support/kicad/library/ftdi.lib"))
+    (library (logical jbr-ics)
+      (uri /Users/John/Dropbox/Documents/libs/KiCad/kicad_footprints/tunaf1sh/jbr-ics.lib))
+    (library (logical nixie-pipe-cache)
+      (uri /Users/John/Projects/JBR-Engineering/nixie-pipe/pcb/kicad/nixie-pipe-cache.lib))
+    (library (logical nixie-pipe-rescue)
+      (uri /Users/John/Projects/JBR-Engineering/nixie-pipe/pcb/kicad/nixie-pipe-rescue.lib))
+    (library (logical device)
+      (uri "/Library/Application Support/kicad/library/device.lib"))
+    (library (logical atmel)
+      (uri "/Library/Application Support/kicad/library/atmel.lib")))
   (nets
     (net (code 1) (name "Net-(P1-Pad2)")
       (node (ref P1) (pin 2))
