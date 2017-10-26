@@ -468,6 +468,35 @@ static int8_t setCounter(void) {
   return ST_COUNTER;
 }
 
+static inline void startUpDisplay() {
+  uint16_t entry = millis();
+
+  for (int p = 0; p < NUM_PIPES; p++) {
+    for (int i = 0; i < 10; i++) {
+      pipes.setPipeNumber(p,i);
+      entry = millis();
+      while( (millis() - entry ) < 60) {
+        pipes.writeFade(32);
+        pipes.show();
+      }
+    }
+  }
+  for (int p = 0; p < NUM_PIPES; p++) {
+    for (int i = 9; i >= 0; i--) {
+      pipes.setPipeNumber(p,i);
+      entry = millis();
+      while( (millis() - entry ) < 60) {
+        pipes.writeFade(32);
+        pipes.show();
+      }
+    }
+  }
+
+  pipes.writeNumber(0);
+  pipes.clear();
+  pipes.show();
+}
+
 void setup() {
   Packet_t packet;
   uint16_t entry = millis();
@@ -478,7 +507,7 @@ void setup() {
   pipes.begin<LED_PIN>();
   pipes.clear();
   pipes.setBrightness(BRIGHTNESS);
-  pipes.setPipeColour(gMainRGB);
+  pipes.setPipeColour(CRGB::White);
   pipes.writeNumber( (VERSION_MAJOR * 100) + VERSION_MINOR);
   pipes.show();
 
@@ -494,25 +523,9 @@ void setup() {
     }
   }
 
+  pipes.setPipeColour(gMainRGB);
   if (!gConnected) {
-    for (int i = 0; i < 10; i++) {
-      pipes.shift(1);
-      pipes.setPipeNumber(0,i);
-      pipes.write();
-      pipes.show();
-      delay(100);
-    }
-    for (int i = 9; i > 0; i--) {
-      pipes.shift(1);
-      pipes.setPipeNumber(0,i);
-      pipes.write();
-      pipes.show();
-      delay(100);
-    }
-
-    pipes.writeNumber(0);
-    pipes.clear();
-    pipes.show();
+    startUpDisplay();
   }
 }
 

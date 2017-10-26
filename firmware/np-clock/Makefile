@@ -1,6 +1,6 @@
 BOARDS_TXT = npboard.txt
 BOARD_TAG    = nixiepipe
-ISP_PROG = usbasp
+ISP_PROG = atmelice_isp
 
 #MCU = atmega328p
 # F_CPU = 16000000
