@@ -65,6 +65,7 @@ NixiePipe pipes = NixiePipe(NUM_PIPES,NUM_UNITS);
 uint8_t gDisplayMode = 0;
 CRGB gMainColour = CRGB::White;
 tmElements_t gTm; // time struct holder
+CRGBPalette16 gPal = CRGBPalette16( CRGB::Blue, CRGB::Cyan, CRGB::Yellow, CRGB::Red);
 
 typedef union {
   struct {
@@ -208,7 +209,7 @@ static void processPacket(Packet_t *ppack) {
         packValue(&res, pipes.getNumber());
         gWeather.outside = ppack->data.message[0];
         gWeather.symbol = ppack->data.message[1];
-        gWeather.wind = ppack->data.message[2];
+        gWeather.wind = ppack->data.message[2] * 3.6; // convert from m/s to km/h
         gWeather.humidity = ppack->data.message[3];
         gWeather.inside = RTC.temperature() / 4;
       }
@@ -259,6 +260,7 @@ void loop()
   static uint8_t lastDisplay = gDisplayMode;
   static CEveryNSeconds everySecond(1);
   static CEveryNSeconds every60Second(60);
+  uint8_t colourIndex;
 
   // RH
   if (~digitalRead(PIPE_TB0) & (tb0int - tb0db > DEBOUNCE)) {
@@ -279,6 +281,9 @@ void loop()
     lastDisplay = gDisplayMode;
     switch (gDisplayMode) {
       case (OUTSIDE_WEATHER):
+        colourIndex = map(gWeather.outside, -10, 40, 0, 255);
+        pipes.setPipeColour(ColorFromPalette(gPal, colourIndex));
+        /*pipes.setPipeColour(CRGB::White);*/
         pipes.setNumber(gWeather.outside);
         pipes.setPipeNumber(0,gWeather.symbol);
         pipes.setPipeColour(0,CRGB::OrangeRed);
@@ -286,6 +291,7 @@ void loop()
         pipes.show();
         break;
       case (HUMIDITY):
+        pipes.setPipeColour(CRGB::White);
         pipes.setNumber(gWeather.humidity);
         pipes.setPipeNumber(0,Weather::Percent);
         pipes.setPipeColour(0,CRGB::Cyan);
@@ -293,6 +299,7 @@ void loop()
         pipes.show();
         break;
       case (WIND_SPEED):
+        pipes.setPipeColour(CRGB::White);
         pipes.setNumber(gWeather.wind);
         pipes.setPipeNumber(0,Weather::Wind);
         pipes.setPipeColour(0,CRGB::White);
@@ -300,15 +307,22 @@ void loop()
         pipes.show();
         break;
       case (INSIDE_TEMP):
+        gWeather.inside = RTC.temperature() / 4;
+        colourIndex = map(gWeather.inside, 0, 30, 0, 255);
+        pipes.setPipeColour(ColorFromPalette(gPal, colourIndex));
+        /*pipes.setPipeColour(CRGB::White);*/
         pipes.setNumber(gWeather.inside);
-        pipes.setPipeColour(0,CRGB::Black);
         pipes.write();
+        pipes.clearPipe(0);
         pipes.show();
         break;
       case (DISPLAY_TIME):
+        RTC.read(gTm);
+        pipes.setPipeColour(CRGB::OrangeRed);
+        pipes.setPipeColour(0, CRGB::Black);
         pipes.setNumber(gTm.Hour * 100 + gTm.Minute);
-        pipes.setPipeColour(0,CRGB::Black);
         pipes.write();
+        /*pipes.writePipeFill(0,CRGB::OrangeRed);*/ // all on but gets hot
         pipes.show();
         break;
       default:
@@ -330,6 +344,12 @@ void loop()
       gWeather.inside = RTC.temperature() / 4;
     }
   }
+
+  /*for (int i = 0; i < 255; i++) {*/
+    /*pipes.setPipeColour(ColorFromPalette(gPal, i));*/
+    /*pipes.write();*/
+    /*pipes.show();*/
+  /*}*/
 
   // Update time
   if (everySecond) {
