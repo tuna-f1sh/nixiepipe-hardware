@@ -84,6 +84,7 @@ static void processPacket(Packet_t *ppack) {
   CRGB rgb;
   byte pipe = ppack->data.message[0];
   Packet_t res;
+  static tmElements_t tm; // time struct holder to set time
 
   res.data.command = ppack->data.command;
   res.data.size = 1;
@@ -152,6 +153,14 @@ static void processPacket(Packet_t *ppack) {
     case (NP_GET_NUMBER):
       if (ppack->data.message[0]) {
         packValue(&res, pipes.getNumber());
+      }
+      break;
+    case (NP_SET_TIME):
+      if (ppack->data.size >= 1) {
+        packValue(&res, pipes.getNumber());
+        tm.Hour = ppack->data.message[0];
+        tm.Minute = ppack->data.message[1];
+        RTC.write(tm);
       }
       break;
     default:

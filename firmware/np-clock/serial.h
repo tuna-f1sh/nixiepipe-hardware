@@ -10,11 +10,13 @@
 #define NP_SET_CONNECT        0x48
 #define NP_SET_UNITS          0x49
 #define NP_SET_SHOW           0x50
+#define NP_SET_WEATHER        0x51
+#define NP_SET_TIME           0x52
 
 #define MAX_PACKET            18
 #define MAX_MESSAGE           MAX_PACKET - 2
 
-#define VERSION_MINOR         7
+#define VERSION_MINOR         8
 #define VERSION_MAJOR         1
 
 #define SERIAL_UINT16(LSB,MSB) (( (short) LSB & 0xFF) | (( (short) MSB & 0xFF) << 8))
