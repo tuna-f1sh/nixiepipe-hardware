@@ -49,13 +49,14 @@
 #define VERSION_MAJOR         1
 
 #define DEBOUNCE              300
-#define DISPLAY_MODES         5
+#define DISPLAY_MODES         6
 #define OUTSIDE_WEATHER       0
 #define HUMIDITY              1
 #define WIND_SPEED            2
 #define INSIDE_TEMP           3
 #define DISPLAY_TIME          4
-#define DISPLAY_UPDATE        DISPLAY_MODES
+#define CYCLE_MODES           5
+#define DISPLAY_UPDATE        DISPLAY_MODES // roll over to no display to issue refresh
 
 #define SERIAL_UINT16(LSB,MSB) (( (short) LSB & 0xFF) | (( (short) MSB & 0xFF) << 8))
 #define SERIAL_UINT32(B0,B1,B2,B3) ( (long) B0 | ( (long) B1 << 8 ) | ( (long) B2 << 16 ) | ( (long) B3 << 24 ) )
@@ -212,6 +213,9 @@ static void processPacket(Packet_t *ppack) {
         gWeather.wind = ppack->data.message[2] * 3.6; // convert from m/s to km/h
         gWeather.humidity = ppack->data.message[3];
         gWeather.inside = RTC.temperature() / 4;
+        // Clip humidity if display not large enough
+        if (NUM_PIPES < 4)
+          if (gWeather.humidity == 100) gWeather.humidity = 99;
       }
       break;
     case (NP_SET_TIME):
@@ -260,20 +264,37 @@ void loop()
   static uint8_t lastDisplay = gDisplayMode;
   static CEveryNSeconds everySecond(1);
   static CEveryNSeconds every60Second(60);
+  static CEveryNSeconds every10Second(10);
   uint8_t colourIndex;
+  static bool cycleDisplay = false;
 
   // RH
   if (~digitalRead(PIPE_TB0) & (tb0int - tb0db > DEBOUNCE)) {
-    if (gDisplayMode < DISPLAY_MODES)
-      ++gDisplayMode;
+    if (cycleDisplay) {
+      cycleDisplay = false;
+    } else {
+      if (gDisplayMode < (DISPLAY_MODES - 1))
+        ++gDisplayMode;
+    }
     tb0db = tb0int;
   }
 
   // LH
   if (~digitalRead(PIPE_TB1) & (tb1int - tb1db > DEBOUNCE)) {
-    if (gDisplayMode > 0) 
-      --gDisplayMode;
+    if (cycleDisplay) {
+      cycleDisplay = false;
+    } else {
+      if (gDisplayMode > 0) 
+        --gDisplayMode;
+    }
     tb1db = tb1int;
+  }
+  
+  if (every10Second && cycleDisplay) {
+    if (gDisplayMode < (DISPLAY_MODES - 2))
+      ++gDisplayMode;
+    else
+      gDisplayMode = 0;
   }
 
   // If user buttons changed mode and a value has been set
@@ -324,6 +345,12 @@ void loop()
         pipes.write();
         /*pipes.writePipeFill(0,CRGB::OrangeRed);*/ // all on but gets hot
         pipes.show();
+        break;
+      case (CYCLE_MODES):
+        pipes.setPipeColour(CRGB::Green);
+        pipes.write();
+        pipes.show();
+        cycleDisplay = true;
         break;
       default:
         break;
