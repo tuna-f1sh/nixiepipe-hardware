@@ -23,8 +23,8 @@
 #include <DS3232RTC.h>
 
 #define LED_PIN               6
-#define NUM_PIPES             8
-#define NUM_UNITS             0
+#define NUM_PIPES             3
+#define NUM_UNITS             1
 #define BRIGHTNESS            255
 
 #define BAUD                  57600
@@ -245,7 +245,7 @@ void setup()
   while (!Serial);
 
   pipes.begin();
-  pipes.setNumberUnits(1);
+  pipes.setNumberUnits(NUM_UNITS);
   pipes.setPipeColour(CRGB::Magenta);
   pipes.setPipeNumber(0,VERSION_MINOR);
   pipes.setPipeNumber(2,VERSION_MAJOR);
