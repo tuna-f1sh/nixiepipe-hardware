@@ -60,16 +60,16 @@ DLY = (wd / YSlots);
 DLZ = (dp / ZSlots);
 
 if (!export) {
-  diffuser(-1);
-  translate([0,0,MATZ]) stack(number);
+  /* diffuser(-1); */
+  /* translate([0,0,MATZ]) stack(number); */
   translate([0,0,MATZ*(number+1)]) face(1);
-  translate([0,0,-WOODZ]) face(0);
+  /* translate([0,0,-WOODZ]) face(0); */
   /* translate([wd/2+MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
-  translate([0,0,MATZ*(number)]) diffuser(-1);
+  /* translate([0,0,MATZ*(number)]) diffuser(-1); */
   /* translate([-wd/2-MATZ/2,5+WS_PIPEH/2+LBD,dp/2-MATZ*3/2]) rotate([0,90,0]) side();*/
   /* translate([0,ht/2+WS_PIPEH+pcbh+MATZ/2,dp/2-MATZ*3/2]) rotate([90,0,0]) base();*/
   /* translate([0,ht/2+WS_PIPEH+WS_H/2]) rotate([90,0,0]) pixel();*/
-  translate([0,ht/2+WS_PIPEH+WS_H,dp/2-MATZ*3/2]) rotate([90,180,0]) pcb();
+  /* translate([0,ht/2+WS_PIPEH+WS_H,dp/2-MATZ*3/2]) rotate([90,180,0]) pcb(); */
   /* translate([148.5,45,-89.2]) rotate([90,180,0]) import("nixie-pipe-pcb.stl");*/
   echo ("<b>Height:</b>",ht,"<b>Width:</b>",wd,"<b>Depth:</b>",dp);
 } else {
