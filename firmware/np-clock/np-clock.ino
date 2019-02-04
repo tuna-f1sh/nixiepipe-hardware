@@ -41,6 +41,7 @@ uint8_t gHue = 0;
 int8_t gState = ST_CLOCK;
 int8_t gEvent = EV_NONE;
 bool gConnected = false;
+const char* message = "Hello Crux from Switzerland!";
 
 NixiePipe pipes = NixiePipe(NUM_PIPES);
 
@@ -506,6 +507,16 @@ static inline void startUpDisplay() {
   pipes.show();
 }
 
+static void writeAscii(const char* string, uint8_t len) {
+  uint8_t c;
+
+  for (c = 0; c < len; c++) {
+    pipes.writeNumber((uint32_t) string[c]);
+    pipes.show();
+    delay(200);
+  }
+}
+
 void setup() {
   Packet_t packet;
   uint16_t entry = millis();
@@ -531,6 +542,8 @@ void setup() {
       processPacket(&packet);
     }
   }
+
+  writeAscii(message, sizeof(message);
 
   pipes.setPipeColour(gMainRGB);
   if (!gConnected) {
