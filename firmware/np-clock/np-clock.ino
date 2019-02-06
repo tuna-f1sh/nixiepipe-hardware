@@ -41,7 +41,7 @@ uint8_t gHue = 0;
 int8_t gState = ST_CLOCK;
 int8_t gEvent = EV_NONE;
 bool gConnected = false;
-const char* message = "Hello Crux from Switzerland!";
+const char message[] = "Hello Crux from Switzerland!";
 
 NixiePipe pipes = NixiePipe(NUM_PIPES);
 
