@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name nixie-pipe-rescue)(type Legacy)(uri ${KIPRJMOD}/nixie-pipe-rescue.lib)(options "")(descr ""))
+  (lib (name jbr-ics)(type Legacy)(uri ${USRMOD}/tunaf1sh/jbr-ics.lib)(options "")(descr ""))
+)

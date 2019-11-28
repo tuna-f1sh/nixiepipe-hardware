@@ -13,15 +13,16 @@ include <laser-functions.scad>
 include <scad-utils/morphology.scad>
 $fn=50;
 
-export = false;
+export = true;
 enumbers = false;
 eblank = false;
-pcb = true;
+pcb = false;
 
 teeth = false;
 node = true;
 
 LBD=0.23; // general kerf diameter
+LBD_ACRY=0.43; // acrylic kerf diameter
 MATZ=3.00; // acrylic thickness
 WOODZ=3.15; // wood thickness
 
@@ -31,7 +32,8 @@ WS_SPACE = WS2812 + WS_BORDER;
 WS_PIPEH = 4;
 WS_H = 1.6;
 
-PCBZ = 1.6;
+/* PCBZ = 1.68; */ // actual for metal
+PCBZ = 1.60;
 SOFF = 4;
 pcbh = PCBZ + SOFF + WS_H;
 PCB_TABZ = 10;
@@ -39,7 +41,7 @@ bspace = 8;
 tab = true;
 
 SCREWDIA = 3 + 0.2;
-STUDDIA = 5;
+STUDDIA = 2.6; // thread it instead of stud
 
 number=10;
 WIDTH = 40 + (WS_SPACE);
@@ -223,7 +225,7 @@ module face(front) {
       }
     } else { // slightly larger for rear acrylic
       translate([0,ht/2+WS_PIPEH+WS_H+1,0]) {
-        cube([wd-10+LBD,PCBZ-LBD+0.2,MATZ],center=true);
+        cube([wd-10+LBD,PCBZ-LBD_ACRY,MATZ],center=true);
           // holes on edge provide strain relief
           translate([(wd-10)/2,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
           translate([(wd-10)/2*-1,(PCBZ-LBD)/2,-MATZ]) cylinder(r=0.4,h=MATZ*2);
