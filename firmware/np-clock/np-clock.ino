@@ -41,7 +41,7 @@ uint8_t gHue = 0;
 int8_t gState = ST_CLOCK;
 int8_t gEvent = EV_NONE;
 bool gConnected = false;
-const char message[] = "Hello Crux from Switzerland!";
+const char message[] = "JBR Engineering Research Ltd";
 
 NixiePipe pipes = NixiePipe(NUM_PIPES);
 
@@ -543,7 +543,7 @@ void setup() {
     }
   }
 
-  writeAscii(message, sizeof(message);
+  writeAscii(message, sizeof(message));
 
   pipes.setPipeColour(gMainRGB);
   if (!gConnected) {
